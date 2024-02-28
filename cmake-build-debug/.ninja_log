@@ -1,0 +1,17 @@
+# ninja log v5
+3	674	7308603077725873	CMakeFiles/ChessEngine.dir/main.cpp.obj	db941093d2804456
+675	928	7308603080215941	ChessEngine.exe	bee0e3a2f1787ccf
+1	480	7308639664354150	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+484	636	7308639665854248	ChessEngine.exe	97676d60ecc1f541
+3	492	7308642883289307	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+493	641	7308642884709291	ChessEngine.exe	97676d60ecc1f541
+3	491	7308643289860454	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+491	636	7308643291270567	ChessEngine.exe	97676d60ecc1f541
+3	583	7308643673488179	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+583	745	7308643675048187	ChessEngine.exe	97676d60ecc1f541
+3	493	7308643773288166	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+497	649	7308643774798179	ChessEngine.exe	97676d60ecc1f541
+3	483	7308643896653850	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+483	635	7308643898133745	ChessEngine.exe	97676d60ecc1f541
+4	489	7308643972449659	CMakeFiles/ChessEngine.dir/src/main.cpp.obj	d173f1f0cc0e1ace
+489	637	7308643973889730	ChessEngine.exe	97676d60ecc1f541
