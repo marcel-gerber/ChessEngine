@@ -9,7 +9,7 @@
 
 class PieceType {
 public:
-    enum Value : std::uint8_t {
+    enum Value : uint8_t {
         PAWN,
         KNIGHT,
         BISHOP,

@@ -3,8 +3,16 @@
 #include "board.hpp"
 
 int main() {
-    Color color = Color::BLACK;
+    Board board = Board();
+    board.getCastlingRights()->set(Castling::BLACK_000);
+    board.getCastlingRights()->set(Castling::WHITE_00);
+    board.getCastlingRights()->unset(Castling::WHITE_00);
 
-    std::cout << +color.getOppositeColor() << std::endl;
+    std::cout << board.getCastlingRights()->has(Castling::WHITE_00) << std::endl;
+    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
+
+    auto square = Square(Square::NONE);
+    std::cout << +square.getIndex();
+
     return 0;
 }
