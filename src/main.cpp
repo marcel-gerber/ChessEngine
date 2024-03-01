@@ -1,6 +1,7 @@
 #include <iostream>
 #include "color.hpp"
 #include "board.hpp"
+#include "fen_parser.hpp"
 
 int main() {
     Board board = Board();
@@ -13,6 +14,8 @@ int main() {
 
     auto square = Square(Square::NONE);
     std::cout << +square.getIndex();
+
+    fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     return 0;
 }
