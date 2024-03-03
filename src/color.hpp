@@ -9,9 +9,10 @@
 
 class Color {
 public:
-    enum Value : uint8_t {
+    enum class Value : uint8_t {
         WHITE,
-        BLACK
+        BLACK,
+        NONE
     };
 
     Color() = default;
@@ -25,8 +26,12 @@ public:
     }
 
     uint8_t getValue() {
-        return color;
+        return static_cast<uint8_t>(color);
     }
+
+    static constexpr Value WHITE = Value::WHITE;
+    static constexpr Value BLACK = Value::BLACK;
+    static constexpr Value NONE = Value::NONE;
 
 private:
     Value color;
