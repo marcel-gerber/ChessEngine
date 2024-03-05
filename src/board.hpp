@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <sstream>
 #include "color.hpp"
 #include "piece.hpp"
 #include "castling_rights.hpp"
@@ -14,8 +15,8 @@
 
 class Board {
 private:
-    uint64_t bb_pieces[6];
-    uint64_t bb_sides[2];
+    uint64_t bb_pieces[6] = { 0 };
+    uint64_t bb_sides[2] = { 0 };
 
     CastlingRights castling_rights;
     Square en_passant_square;
@@ -32,6 +33,11 @@ private:
         bits &= ~(1ULL << index);
     }
 
+    bool isSet(uint64_t &&bits, uint8_t &index) const {
+        assert(index >= 0 && index <= 63);
+        return bits & (1ULL << index);
+    }
+
 public:
     Board() {
         castling_rights = CastlingRights();
@@ -44,6 +50,49 @@ public:
         set(bb_sides[piece.getColor().getValue()], index);
     }
 
+    [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const {
+        return bb_sides[color.getValue()] & bb_pieces[pieceType.getValue()];
+    }
+
+    Piece getPiece(uint8_t &index) const {
+        if(isSet(getPieces(Color::WHITE, PieceType::PAWN), index)) return Piece::WHITE_PAWN;
+        if(isSet(getPieces(Color::WHITE, PieceType::KNIGHT), index)) return Piece::WHITE_KNIGHT;
+        if(isSet(getPieces(Color::WHITE, PieceType::BISHOP), index)) return Piece::WHITE_BISHOP;
+        if(isSet(getPieces(Color::WHITE, PieceType::ROOK), index)) return Piece::WHITE_ROOK;
+        if(isSet(getPieces(Color::WHITE, PieceType::QUEEN), index)) return Piece::WHITE_QUEEN;
+        if(isSet(getPieces(Color::WHITE, PieceType::KING), index)) return Piece::WHITE_KING;
+
+        if(isSet(getPieces(Color::BLACK, PieceType::PAWN), index)) return Piece::BLACK_PAWN;
+        if(isSet(getPieces(Color::BLACK, PieceType::KNIGHT), index)) return Piece::BLACK_KNIGHT;
+        if(isSet(getPieces(Color::BLACK, PieceType::BISHOP), index)) return Piece::BLACK_BISHOP;
+        if(isSet(getPieces(Color::BLACK, PieceType::ROOK), index)) return Piece::BLACK_ROOK;
+        if(isSet(getPieces(Color::BLACK, PieceType::QUEEN), index)) return Piece::BLACK_QUEEN;
+        if(isSet(getPieces(Color::BLACK, PieceType::KING), index)) return Piece::BLACK_KING;
+
+        return Piece::NONE;
+    }
+
+    void print() const {
+        std::stringstream ss;
+        uint8_t index = 56;
+
+        ss << "---------------------------------\n";
+
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                Piece piece = getPiece(index);
+                ss << "| " << piece.getCharacter() << " ";
+
+                index++;
+            }
+            ss << "|\n";
+            ss << "---------------------------------\n";
+            index -= 16;
+        }
+
+        std::cout << ss.str();
+    }
+
     CastlingRights* getCastlingRights() {
         return &castling_rights;
     }
@@ -52,12 +101,16 @@ public:
         return &en_passant_square;
     }
 
+    void setEnPassantSquare(Square square) {
+        this->en_passant_square = square;
+    }
+
     void setSideToMove(Color color) {
-        side_to_move = color;
+        this->side_to_move = color;
     }
 
     uint8_t getSideToMove() {
-        return side_to_move.getValue();
+        return this->side_to_move.getValue();
     }
 
     void setHalfMoveClock(const uint8_t &half_move) {
@@ -65,7 +118,7 @@ public:
     }
 
     [[nodiscard]] uint8_t getHalfMoveClock() const {
-        return half_move_clock;
+        return this->half_move_clock;
     }
 };
 

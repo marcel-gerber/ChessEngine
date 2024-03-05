@@ -27,6 +27,20 @@ public:
 
     }
 
+    Square(const uint8_t &index) : square(NONE) {
+        assert(index >= 0 && index <= 63);
+        square = static_cast<Square::Value>(index);
+    }
+
+    Square(const std::string &string) : square(NONE) {
+        if(string == "-") {
+            return;
+        }
+
+        assert(string.size() == 2);
+        square = static_cast<Square::Value>((string[0] - 'a') + ((string[1] - '1') * 8));
+    }
+
     [[nodiscard]] uint8_t getIndex() const {
         return static_cast<uint8_t>(square);
     }

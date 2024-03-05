@@ -43,8 +43,9 @@ public:
 
         board.setHalfMoveClock(half_move_clock);
         board.setSideToMove(side_to_move == "w" ? Color::WHITE : Color::BLACK);
+        board.setEnPassantSquare(Square(en_passant));
 
-        // start upper left corner of board
+        // start at upper left corner of board
         uint8_t index = 56;
         for(const char &c : pieces) {
             auto piece = Piece(c);
@@ -62,6 +63,30 @@ public:
 
             if(isdigit(c)) {
                 index += (c - '0'); // get the numeric value of the character c
+            }
+        }
+
+        for(const char &c : castling) {
+            if(c == '-') break;
+
+            if(c == 'K') {
+                board.getCastlingRights()->set(Castling::WHITE_00);
+                continue;
+            }
+
+            if(c == 'Q') {
+                board.getCastlingRights()->set(Castling::WHITE_000);
+                continue;
+            }
+
+            if(c == 'k') {
+                board.getCastlingRights()->set(Castling::BLACK_00);
+                continue;
+            }
+
+            if(c == 'q') {
+                board.getCastlingRights()->set(Castling::BLACK_000);
+                continue;
             }
         }
     }

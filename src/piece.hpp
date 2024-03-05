@@ -125,6 +125,39 @@ public:
         return Color::NONE;
     }
 
+    [[nodiscard]] char getCharacter() const {
+        switch(piece) {
+            case Value::WHITE_PAWN:
+                return 'P';
+            case Value::WHITE_KNIGHT:
+                return 'N';
+            case Value::WHITE_BISHOP:
+                return 'B';
+            case Value::WHITE_ROOK:
+                return 'R';
+            case Value::WHITE_QUEEN:
+                return 'Q';
+            case Value::WHITE_KING:
+                return 'K';
+            case Value::BLACK_PAWN:
+                return 'p';
+            case Value::BLACK_KNIGHT:
+                return 'n';
+            case Value::BLACK_BISHOP:
+                return 'b';
+            case Value::BLACK_ROOK:
+                return 'r';
+            case Value::BLACK_QUEEN:
+                return 'q';
+            case Value::BLACK_KING:
+                return 'k';
+            case Value::NONE:
+                return ' ';
+            default:
+                return 0;
+        }
+    }
+
     [[nodiscard]] PieceType getType() const {
         return static_cast<PieceType::Value>((uint8_t) piece % 6);
     }

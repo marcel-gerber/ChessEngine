@@ -25,7 +25,7 @@ public:
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 
-    uint8_t getValue() {
+    [[nodiscard]] uint8_t getValue() const {
         return static_cast<uint8_t>(color);
     }
 
