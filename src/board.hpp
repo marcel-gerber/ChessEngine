@@ -11,7 +11,7 @@
 #include "color.hpp"
 #include "piece.hpp"
 #include "castling_rights.hpp"
-#include "square.hpp"
+#include "grid.hpp"
 
 class Board {
 private:
