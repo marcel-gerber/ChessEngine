@@ -46,12 +46,12 @@ public:
     }
 
     void placePiece(Piece &piece, uint8_t &index) {
-        set(bb_pieces[piece.getType().getValue()], index);
+        set(bb_pieces[piece.getType().getIndex()], index);
         set(bb_sides[piece.getColor().getValue()], index);
     }
 
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const {
-        return bb_sides[color.getValue()] & bb_pieces[pieceType.getValue()];
+        return bb_sides[color.getValue()] & bb_pieces[pieceType.getIndex()];
     }
 
     Piece getPiece(uint8_t &index) const {

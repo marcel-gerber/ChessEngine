@@ -25,8 +25,12 @@ public:
 
     }
 
-    [[nodiscard]] uint8_t getValue() const {
+    [[nodiscard]] uint8_t getIndex() const {
         return static_cast<uint8_t>(pieceType);
+    }
+
+    [[nodiscard]] Value getValue() const {
+        return pieceType;
     }
 
     static constexpr Value PAWN = Value::PAWN;

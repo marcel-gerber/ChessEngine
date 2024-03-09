@@ -22,14 +22,37 @@ public:
         FILE_H
     };
 
-    static constexpr uint64_t FILE_A = 0x0101010101010101ULL;
-    static constexpr uint64_t FILE_B = FILE_A << 1;
-    static constexpr uint64_t FILE_C = FILE_A << 2;
-    static constexpr uint64_t FILE_D = FILE_A << 3;
-    static constexpr uint64_t FILE_E = FILE_A << 4;
-    static constexpr uint64_t FILE_F = FILE_A << 5;
-    static constexpr uint64_t FILE_G = FILE_A << 6;
-    static constexpr uint64_t FILE_H = FILE_A << 7;
+    static uint64_t getBitboard(const uint8_t &index) {
+        switch(static_cast<Value>(index)) {
+            case Value::FILE_A:
+                return FILE_ABB;
+            case Value::FILE_B:
+                return FILE_BBB;
+            case Value::FILE_C:
+                return FILE_CBB;
+            case Value::FILE_D:
+                return FILE_DBB;
+            case Value::FILE_E:
+                return FILE_EBB;
+            case Value::FILE_F:
+                return FILE_FBB;
+            case Value::FILE_G:
+                return FILE_GBB;
+            case Value::FILE_H:
+                return FILE_HBB;
+            default:
+                return 0ULL;
+        }
+    }
+
+    static constexpr uint64_t FILE_ABB = 0x0101010101010101ULL;
+    static constexpr uint64_t FILE_BBB = FILE_ABB << 1;
+    static constexpr uint64_t FILE_CBB = FILE_ABB << 2;
+    static constexpr uint64_t FILE_DBB = FILE_ABB << 3;
+    static constexpr uint64_t FILE_EBB = FILE_ABB << 4;
+    static constexpr uint64_t FILE_FBB = FILE_ABB << 5;
+    static constexpr uint64_t FILE_GBB = FILE_ABB << 6;
+    static constexpr uint64_t FILE_HBB = FILE_ABB << 7;
 
 };
 
@@ -46,14 +69,37 @@ public:
         RANK_8
     };
 
-    static constexpr uint64_t RANK_1 = 0xFF;
-    static constexpr uint64_t RANK_2 = RANK_1 << (8 * 1);
-    static constexpr uint64_t RANK_3 = RANK_1 << (8 * 2);
-    static constexpr uint64_t RANK_4 = RANK_1 << (8 * 3);
-    static constexpr uint64_t RANK_5 = RANK_1 << (8 * 4);
-    static constexpr uint64_t RANK_6 = RANK_1 << (8 * 5);
-    static constexpr uint64_t RANK_7 = RANK_1 << (8 * 6);
-    static constexpr uint64_t RANK_8 = RANK_1 << (8 * 7);
+    static uint64_t getBitboard(const uint8_t &index) {
+        switch(static_cast<Value>(index)) {
+            case Value::RANK_1:
+                return RANK_1BB;
+            case Value::RANK_2:
+                return RANK_2BB;
+            case Value::RANK_3:
+                return RANK_3BB;
+            case Value::RANK_4:
+                return RANK_4BB;
+            case Value::RANK_5:
+                return RANK_5BB;
+            case Value::RANK_6:
+                return RANK_6BB;
+            case Value::RANK_7:
+                return RANK_7BB;
+            case Value::RANK_8:
+                return RANK_8BB;
+            default:
+                return 0ULL;
+        }
+    }
+
+    static constexpr uint64_t RANK_1BB = 0xFF;
+    static constexpr uint64_t RANK_2BB = RANK_1BB << (8 * 1);
+    static constexpr uint64_t RANK_3BB = RANK_1BB << (8 * 2);
+    static constexpr uint64_t RANK_4BB = RANK_1BB << (8 * 3);
+    static constexpr uint64_t RANK_5BB = RANK_1BB << (8 * 4);
+    static constexpr uint64_t RANK_6BB = RANK_1BB << (8 * 5);
+    static constexpr uint64_t RANK_7BB = RANK_1BB << (8 * 6);
+    static constexpr uint64_t RANK_8BB = RANK_1BB << (8 * 7);
 
 };
 
@@ -78,8 +124,9 @@ public:
     }
 
     Square(const uint8_t &index) : square(NONE) {
-        assert(index >= 0 && index <= 63);
-        square = static_cast<Square::Value>(index);
+        if(index >= 0 && index <= 63) {
+            square = static_cast<Square::Value>(index);
+        }
     }
 
     Square(const std::string &string) : square(NONE) {
@@ -91,8 +138,12 @@ public:
         square = static_cast<Square::Value>((string[0] - 'a') + ((string[1] - '1') * 8));
     }
 
-    [[nodiscard]] uint8_t getIndex() const {
+    [[nodiscard]] constexpr uint8_t getIndex() const {
         return static_cast<uint8_t>(square);
+    }
+
+    [[nodiscard]] bool isValid() const {
+        return (square >= Value::A1 && square <= Value::H8);
     }
 
     // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks

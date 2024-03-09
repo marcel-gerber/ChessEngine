@@ -2,6 +2,8 @@
 #include "color.hpp"
 #include "board.hpp"
 #include "fen_parser.hpp"
+#include "attacks.hpp"
+#include "misc/find_magics.hpp"
 
 int main() {
     Board board = Board();
@@ -26,6 +28,7 @@ int main() {
     std::cout << +board.getEnPassantSquare()->getIndex() << std::endl;
 
     board.print();
+    Attacks::initMagics();
 
     return 0;
 }
