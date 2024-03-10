@@ -17,10 +17,6 @@ int main() {
     auto square = Square(Square::NONE);
     std::cout << +square.getIndex();
 
-    Piece piece = Piece('k');
-    std::cout << +piece.getType().getValue() << std::endl;
-    std::cout << +piece.getColor().getValue() << std::endl;
-
     Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     std::cout << +board.getHalfMoveClock() << std::endl;
     std::cout << +board.getSideToMove() << std::endl;

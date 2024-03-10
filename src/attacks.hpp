@@ -44,7 +44,7 @@ private:
 
         // East-Direction
         current = Square(square.getIndex() + 1);
-        while(current.getRankIndex() != 0 && current.isValid()) {
+        while(current.getFileIndex() != 0 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
             if(Misc::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() + 1);
@@ -60,7 +60,7 @@ private:
 
         // West-Direction
         current = Square(square.getIndex() - 1);
-        while(current.getRankIndex() != 7 && current.isValid()) {
+        while(current.getFileIndex() != 7 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
             if(Misc::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() - 1);
@@ -71,8 +71,39 @@ private:
 
     static uint64_t getBishopAttack(Square square, uint64_t occupied) {
         uint64_t attacks = 0ULL;
+        Square current{};
 
-        // TODO
+        // North-East-Direction
+        current = Square(square.getIndex() + 9);
+        while(square.getFileIndex() != 0 && current.isValid()) {
+            attacks |= 1ULL << current.getIndex();
+            if(Misc::isSet(occupied, current.getIndex())) break;
+            current = Square(current.getIndex() + 8);
+        }
+
+        // South-East-Direction
+        current = Square(square.getIndex() - 7);
+        while(current.getFileIndex() != 0 && current.isValid()) {
+            attacks |= 1ULL << current.getIndex();
+            if(Misc::isSet(occupied, current.getIndex())) break;
+            current = Square(current.getIndex() + 1);
+        }
+
+        // South-West-Direction
+        current = Square(square.getIndex() - 9);
+        while(current.getFileIndex() != 7 && current.isValid()) {
+            attacks |= 1ULL << current.getIndex();
+            if(Misc::isSet(occupied, current.getIndex())) break;
+            current = Square(current.getIndex() - 8);
+        }
+
+        // North-West-Direction
+        current = Square(square.getIndex() + 7);
+        while(current.getFileIndex() != 7 && current.isValid()) {
+            attacks |= 1ULL << current.getIndex();
+            if(Misc::isSet(occupied, current.getIndex())) break;
+            current = Square(current.getIndex() - 1);
+        }
 
         return attacks;
     }
@@ -81,21 +112,38 @@ private:
         const uint64_t edges = ((Rank::RANK_1BB | Rank::RANK_8BB) & ~Rank::getBitboard(square.getRankIndex()) |
                 ((File::FILE_ABB | File::FILE_HBB) & ~File::getBitboard(square.getFileIndex())));
 
-        Magic entry = table[square.getIndex()];
-        entry.magic = magic;
+        Magic* entry = &table[square.getIndex()];
+        entry->magic = magic;
 
         uint64_t mask = (pieceType.getValue() == PieceType::ROOK
                 ? getRookAttack(square, 0ULL) : getBishopAttack(square, 0ULL));
         mask &= ~edges;
 
-        entry.mask = mask;
-        entry.shit = 64 - Misc::popcount(mask);
+        entry->mask = mask;
 
-        // TODO: initialize attacks
+        uint8_t popcount = Misc::popcount(mask);
+        entry->shit = 64 - popcount;
 
-        std::cout << entry.magic << std::endl;
-        std::cout << entry.mask << std::endl;
-        std::cout << +entry.shit << std::endl;
+        if(square.getIndex() + 1 < 64) {
+            table[square.getIndex() + 1].attacks = entry->attacks + (1ULL << popcount);
+        }
+
+        // calculate all blocker bitboards and add them to 'attacks'
+        auto indices = Misc::getIndices(mask);
+        int numBlockers = 1 << indices.size();
+
+        uint64_t blocker = 0ULL;
+
+        for(int i = 0; i < numBlockers; i++) {
+            for(int j = 0; j < indices.size(); j++) {
+                int bit = (i >> j) & 1;
+                blocker |= (uint64_t) bit << indices[j];
+            }
+            // calculate attack with 'blocker' mask and add it to the 'attacks' magic table at the 'magic index'
+            entry->attacks[table[square.getIndex()].getIndex(blocker)] = (pieceType.getValue() == PieceType::ROOK
+                    ? getRookAttack(square, blocker) : getBishopAttack(square, blocker));
+            blocker = 0ULL;
+        }
     }
 
     static constexpr uint64_t RookMagics[64] = {
@@ -137,12 +185,23 @@ private:
     };
 
 public:
+    static uint64_t getRookAttacks(Square square, uint64_t occupied) {
+        return RookTable[square.getIndex()].attacks[RookTable[square.getIndex()].getIndex(occupied)];
+    }
+
+    static uint64_t getBishopAttacks(Square square, uint64_t occupied) {
+        return BishopTable[square.getIndex()].attacks[BishopTable[square.getIndex()].getIndex(occupied)];
+    }
+
     static void initMagics() {
         // Point the pointer 'attacks' to an array where the attacks are being stored
         RookTable[0].attacks = RookAttacks;
         BishopTable[0].attacks = BishopAttacks;
 
-        initMagic(PieceType::ROOK, Square(0), RookTable, RookMagics[0]);
+        for(int i = 0; i < 64; i++) {
+            initMagic(PieceType::ROOK, Square(i), RookTable, RookMagics[i]);
+            // initMagic(PieceType::BISHOP, Square(i), BishopTable, BishopMagics[i]);
+        }
     }
 };
 

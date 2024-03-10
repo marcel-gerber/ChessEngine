@@ -148,11 +148,11 @@ public:
 
     // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks
     [[nodiscard]] uint8_t getFileIndex() const {
-        return getIndex() >> 3;
+        return getIndex() & 7;
     }
 
     [[nodiscard]] uint8_t getRankIndex() const {
-        return getIndex() & 7;
+        return getIndex() >> 3;
     }
 
     [[nodiscard]] uint8_t getDiagonalIndex() const {
