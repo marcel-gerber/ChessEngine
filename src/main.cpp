@@ -14,7 +14,7 @@ int main() {
     std::cout << board.getCastlingRights()->has(Castling::WHITE_00) << std::endl;
     std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
 
-    auto square = Square(Square::NONE);
+    auto square = Square(Square::Value::E7);
     std::cout << +square.getIndex();
 
     Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -23,8 +23,12 @@ int main() {
     std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
     std::cout << +board.getEnPassantSquare()->getIndex() << std::endl;
 
+    Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10");
     board.print();
+
     Attacks::initMagics();
+    uint64_t attacks = Attacks::getQueenAttacks(square, board.getOccupancy());
+    Misc::printBits(attacks);
 
     return 0;
 }

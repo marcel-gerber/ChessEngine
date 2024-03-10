@@ -25,11 +25,11 @@ public:
 
     }
 
-    [[nodiscard]] uint8_t getIndex() const {
+    [[nodiscard]] constexpr uint8_t getIndex() const {
         return static_cast<uint8_t>(pieceType);
     }
 
-    [[nodiscard]] Value getValue() const {
+    [[nodiscard]] constexpr Value getValue() const {
         return pieceType;
     }
 

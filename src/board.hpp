@@ -72,6 +72,10 @@ public:
         return Piece::NONE;
     }
 
+    [[nodiscard]] uint64_t getOccupancy() const {
+        return bb_sides[0] | bb_sides[1];
+    }
+
     void print() const {
         std::stringstream ss;
         uint8_t index = 56;
