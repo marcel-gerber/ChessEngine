@@ -29,6 +29,10 @@ public:
         return static_cast<uint8_t>(color);
     }
 
+    constexpr bool operator==(const Color &rhs) const {
+        return getValue() == rhs.getValue();
+    }
+
     static constexpr Value WHITE = Value::WHITE;
     static constexpr Value BLACK = Value::BLACK;
     static constexpr Value NONE = Value::NONE;

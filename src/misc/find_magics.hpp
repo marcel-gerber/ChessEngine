@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#include <iomanip>
 
 // Class for finding Magic Numbers for Rook and Bishop Magic Table
 // Source Code by Tord Romstad
@@ -147,7 +148,7 @@ private:
             }
             if(!fail) return magic;
         }
-        printf("***Failed***\n");
+        std::cout << "***Failed***" << std::endl;
         return 0ULL;
     }
 
@@ -177,15 +178,37 @@ public:
     static void run() {
         int square;
 
-        printf("const uint64_t RMagic[64] = {\n");
-        for(square = 0; square < 64; square++)
-            printf("  0x%llxULL,\n", find_magic(square, RBits[square], 0));
-        printf("};\n\n");
+        std::cout << "static constexpr uint64_t RookMagics[64] = {" << std::endl;
+        for(square = 0; square < 64; square++) {
+            uint64_t magic = find_magic(square, RBits[square], 0);
 
-        printf("const uint64_t BMagic[64] = {\n");
-        for(square = 0; square < 64; square++)
-            printf("  0x%llxULL,\n", find_magic(square, BBits[square], 1));
-        printf("};\n\n");
+            if(square % 4 == 0) {
+                std::cout << "        ";
+            }
+
+            std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0') << magic << "ULL, ";
+
+            if(square % 4 == 3) {
+                std::cout << std::endl;
+            }
+        }
+        std::cout << "};" << std::endl << std::endl;
+
+        std::cout << "static constexpr uint64_t BishopMagics[64] = {" << std::endl;
+        for(square = 0; square < 64; square++) {
+            uint64_t magic = find_magic(square, BBits[square], 1);
+
+            if(square % 4 == 0) {
+                std::cout << "        ";
+            }
+
+            std::cout << "0x" << std::hex << std::setw(16) << std::setfill('0') << magic << "ULL, ";
+
+            if(square % 4 == 3) {
+                std::cout << std::endl;
+            }
+        }
+        std::cout << "};" << std::endl << std::endl;
     }
 
 };
