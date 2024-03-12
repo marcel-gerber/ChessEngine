@@ -10,6 +10,7 @@
 #include "grid.hpp"
 #include "misc/misc.hpp"
 #include "constants.hpp"
+#include "board.hpp"
 
 class Attacks {
 private:

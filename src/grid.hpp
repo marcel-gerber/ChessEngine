@@ -138,6 +138,14 @@ public:
         square = static_cast<Square::Value>((string[0] - 'a') + ((string[1] - '1') * 8));
     }
 
+    constexpr bool operator<(const uint64_t &rhs) const {
+        return getIndex() < rhs;
+    }
+
+    constexpr void operator++(int) {
+        square = static_cast<Value>(getIndex() + 1);
+    }
+
     [[nodiscard]] constexpr uint8_t getIndex() const {
         return static_cast<uint8_t>(square);
     }
