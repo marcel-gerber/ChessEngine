@@ -20,6 +20,16 @@ public:
         return std::popcount(bits);
     }
 
+    static constexpr uint8_t popcount(uint64_t &&bits) {
+        return std::popcount(bits);
+    }
+
+    static constexpr uint8_t pop(uint64_t &bits) {
+        uint8_t index = std::countr_zero(bits);
+        bits &= bits - 1;
+        return index;
+    }
+
     static std::vector<uint8_t> getIndices(const uint64_t &bits) {
         std::vector<uint8_t> indices;
 

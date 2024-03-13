@@ -44,6 +44,43 @@ public:
             }
         }
     }
+
+    static uint64_t pinMaskHV(const Board &board, Color color, Square square, uint64_t bb_opp, uint64_t bb_us) {
+        const uint64_t opp_rook = board.getPieces(color.getOppositeColor(), PieceType::ROOK);
+        const uint64_t opp_queen = board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
+
+        uint64_t rook_attacks = Attacks::getRookAttacks(square, bb_opp) & (opp_rook | opp_queen);
+        uint64_t pin_hv = 0ULL;
+
+        while(rook_attacks) {
+            uint8_t index = Misc::pop(rook_attacks);
+
+            const uint64_t possible_pin = SQUARES_BETWEEN[square.getIndex()][index] | Square::toBitboard(index);
+            if(Misc::popcount(possible_pin & bb_us) == 1) {
+                pin_hv |= possible_pin;
+            }
+        }
+        return pin_hv;
+    }
+
+    static uint64_t pinMaskDiagonal(const Board &board, Color color, Square square, uint64_t bb_opp, uint64_t bb_us) {
+        const uint64_t opp_bishop = board.getPieces(color.getOppositeColor(), PieceType::BISHOP);
+        const uint64_t opp_queen = board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
+
+        uint64_t bishop_attacks = Attacks::getBishopAttacks(square, bb_opp) & (opp_bishop | opp_queen);
+        uint64_t pin_d = 0ULL;
+
+        while(bishop_attacks) {
+            uint8_t index = Misc::pop(bishop_attacks);
+
+            const uint64_t possible_pin = SQUARES_BETWEEN[square.getIndex()][index] | Square::toBitboard(index);
+            if(Misc::popcount(possible_pin & bb_us) == 1) {
+                pin_d |= possible_pin;
+            }
+        }
+        return pin_d;
+    }
+
 };
 
 #endif

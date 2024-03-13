@@ -154,6 +154,10 @@ public:
         return (square >= Value::A1 && square <= Value::H8);
     }
 
+    static uint64_t toBitboard(const uint8_t &index) {
+        return (1ULL << index);
+    }
+
     // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks
     [[nodiscard]] uint8_t getFileIndex() const {
         return getIndex() & 7;
