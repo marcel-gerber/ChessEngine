@@ -8,7 +8,7 @@
 #include <cstdint>
 #include "piece.hpp"
 #include "grid.hpp"
-#include "misc/misc.hpp"
+#include "misc/bits.hpp"
 #include "constants.hpp"
 #include "board.hpp"
 
@@ -41,7 +41,7 @@ private:
         current = Square(square.getIndex() + 8);
         while(current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() + 8);
         }
 
@@ -49,7 +49,7 @@ private:
         current = Square(square.getIndex() + 1);
         while(current.getFileIndex() != 0 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() + 1);
         }
 
@@ -57,7 +57,7 @@ private:
         current = Square(square.getIndex() - 8);
         while(current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() - 8);
         }
 
@@ -65,7 +65,7 @@ private:
         current = Square(square.getIndex() - 1);
         while(current.getFileIndex() != 7 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() - 1);
         }
 
@@ -81,7 +81,7 @@ private:
         current = Square(square.getIndex() + 9);
         while(current.getFileIndex() != 0 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() + 9);
         }
 
@@ -89,7 +89,7 @@ private:
         current = Square(square.getIndex() - 7);
         while(current.getFileIndex() != 0 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() - 7);
         }
 
@@ -97,7 +97,7 @@ private:
         current = Square(square.getIndex() - 9);
         while(current.getFileIndex() != 7 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() - 9);
         }
 
@@ -105,7 +105,7 @@ private:
         current = Square(square.getIndex() + 7);
         while(current.getFileIndex() != 7 && current.isValid()) {
             attacks |= 1ULL << current.getIndex();
-            if(Misc::isSet(occupied, current.getIndex())) break;
+            if(Bits::isSet(occupied, current.getIndex())) break;
             current = Square(current.getIndex() + 7);
         }
 
@@ -124,9 +124,9 @@ private:
         mask &= ~edges;
 
         entry->mask = mask;
-        entry->shift = 64 - Misc::popcount(mask);
+        entry->shift = 64 - Bits::popcount(mask);
 
-        auto indices = Misc::getIndices(mask);
+        auto indices = Bits::getIndices(mask);
         int numBlockers = 1 << indices.size();
 
         // point pointer of the next square to current pointer + numBlockers
@@ -151,39 +151,39 @@ private:
 
 public:
     /// Get the pawns right-side attacks from the colors perspective
-    static uint64_t getPawnRightAttacks(Board &board, Color &color) {
+    static uint64_t getPawnRightAttacks(const Board &board, Color &color) {
         uint64_t pawns = board.getPieces(color, PieceType::PAWN);
         return color == Color::WHITE ? (pawns << 9 & ~File::FILE_ABB) : (pawns >> 9 & ~File::FILE_HBB);
     }
 
     /// Get the pawns left-side attacks from the colors perspective
-    static uint64_t getPawnLeftAttacks(Board &board, Color &color) {
+    static uint64_t getPawnLeftAttacks(const Board &board, Color &color) {
         uint64_t pawns = board.getPieces(color, PieceType::PAWN);
         return color == Color::WHITE ? (pawns << 7 & ~File::FILE_HBB) : (pawns >> 7 & ~File::FILE_ABB);
     }
 
-    static uint64_t getPawnAttacks(Color &color, Square &square) {
-        return Constants::PawnAttacks[color.getValue()][square.getIndex()];
+    static uint64_t getPawnAttacks(Color &color, const uint8_t &index) {
+        return Constants::PawnAttacks[color.getValue()][index];
     }
 
-    static uint64_t getKnightAttacks(Square &square) {
-        return Constants::KnightAttacks[square.getIndex()];
+    static uint64_t getKnightAttacks(const uint8_t &index) {
+        return Constants::KnightAttacks[index];
     }
 
-    static uint64_t getKingAttacks(Square &square) {
-        return Constants::KingAttacks[square.getIndex()];
+    static uint64_t getKingAttacks(const uint8_t &index) {
+        return Constants::KingAttacks[index];
     }
 
-    static uint64_t getRookAttacks(Square &square, const uint64_t &occupied) {
-        return RookTable[square.getIndex()].attacks[RookTable[square.getIndex()].getIndex(occupied)];
+    static uint64_t getRookAttacks(const uint8_t &index, const uint64_t &occupied) {
+        return RookTable[index].attacks[RookTable[index].getIndex(occupied)];
     }
 
-    static uint64_t getBishopAttacks(Square &square, const uint64_t &occupied) {
-        return BishopTable[square.getIndex()].attacks[BishopTable[square.getIndex()].getIndex(occupied)];
+    static uint64_t getBishopAttacks(const uint8_t &index, const uint64_t &occupied) {
+        return BishopTable[index].attacks[BishopTable[index].getIndex(occupied)];
     }
 
-    static uint64_t getQueenAttacks(Square &square, const uint64_t &occupied) {
-        return getRookAttacks(square, occupied) | getBishopAttacks(square, occupied);
+    static uint64_t getQueenAttacks(const uint8_t &index, const uint64_t &occupied) {
+        return getRookAttacks(index, occupied) | getBishopAttacks(index, occupied);
     }
 
     static void initMagics() {

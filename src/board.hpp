@@ -12,6 +12,7 @@
 #include "piece.hpp"
 #include "castling_rights.hpp"
 #include "grid.hpp"
+#include "misc/bits.hpp"
 
 class Board {
 private:
@@ -23,21 +24,6 @@ private:
     uint8_t half_move_clock;
     Color side_to_move;
 
-    void set(uint64_t &bits, uint8_t &index) {
-        assert(index >= 0 && index <= 63);
-        bits |= (1ULL << index);
-    }
-
-    void unset(uint64_t &bits, uint8_t &index) {
-        assert(index >= 0 && index <= 63);
-        bits &= ~(1ULL << index);
-    }
-
-    bool isSet(uint64_t &&bits, uint8_t &index) const {
-        assert(index >= 0 && index <= 63);
-        return bits & (1ULL << index);
-    }
-
 public:
     Board() {
         castling_rights = CastlingRights();
@@ -46,8 +32,8 @@ public:
     }
 
     void placePiece(Piece &piece, uint8_t &index) {
-        set(bb_pieces[piece.getType().getIndex()], index);
-        set(bb_sides[piece.getColor().getValue()], index);
+        Bits::set(bb_pieces[piece.getType().getIndex()], index);
+        Bits::set(bb_sides[piece.getColor().getValue()], index);
     }
 
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const {
@@ -55,25 +41,34 @@ public:
     }
 
     Piece getPiece(uint8_t &index) const {
-        if(isSet(getPieces(Color::WHITE, PieceType::PAWN), index)) return Piece::WHITE_PAWN;
-        if(isSet(getPieces(Color::WHITE, PieceType::KNIGHT), index)) return Piece::WHITE_KNIGHT;
-        if(isSet(getPieces(Color::WHITE, PieceType::BISHOP), index)) return Piece::WHITE_BISHOP;
-        if(isSet(getPieces(Color::WHITE, PieceType::ROOK), index)) return Piece::WHITE_ROOK;
-        if(isSet(getPieces(Color::WHITE, PieceType::QUEEN), index)) return Piece::WHITE_QUEEN;
-        if(isSet(getPieces(Color::WHITE, PieceType::KING), index)) return Piece::WHITE_KING;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::PAWN), index)) return Piece::WHITE_PAWN;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::KNIGHT), index)) return Piece::WHITE_KNIGHT;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::BISHOP), index)) return Piece::WHITE_BISHOP;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::ROOK), index)) return Piece::WHITE_ROOK;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::QUEEN), index)) return Piece::WHITE_QUEEN;
+        if(Bits::isSet(getPieces(Color::WHITE, PieceType::KING), index)) return Piece::WHITE_KING;
 
-        if(isSet(getPieces(Color::BLACK, PieceType::PAWN), index)) return Piece::BLACK_PAWN;
-        if(isSet(getPieces(Color::BLACK, PieceType::KNIGHT), index)) return Piece::BLACK_KNIGHT;
-        if(isSet(getPieces(Color::BLACK, PieceType::BISHOP), index)) return Piece::BLACK_BISHOP;
-        if(isSet(getPieces(Color::BLACK, PieceType::ROOK), index)) return Piece::BLACK_ROOK;
-        if(isSet(getPieces(Color::BLACK, PieceType::QUEEN), index)) return Piece::BLACK_QUEEN;
-        if(isSet(getPieces(Color::BLACK, PieceType::KING), index)) return Piece::BLACK_KING;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::PAWN), index)) return Piece::BLACK_PAWN;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::KNIGHT), index)) return Piece::BLACK_KNIGHT;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::BISHOP), index)) return Piece::BLACK_BISHOP;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::ROOK), index)) return Piece::BLACK_ROOK;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::QUEEN), index)) return Piece::BLACK_QUEEN;
+        if(Bits::isSet(getPieces(Color::BLACK, PieceType::KING), index)) return Piece::BLACK_KING;
 
         return Piece::NONE;
     }
 
+    [[nodiscard]] uint64_t getSide(Color color) const {
+        return bb_sides[color.getValue()];
+    }
+
     [[nodiscard]] uint64_t getOccupancy() const {
         return bb_sides[0] | bb_sides[1];
+    }
+    
+    [[nodiscard]] uint8_t getKingIndex(Color color) const {
+        uint64_t bb_king = getPieces(color, PieceType::KING);
+        return Bits::popcount(bb_king);
     }
 
     void print() const {

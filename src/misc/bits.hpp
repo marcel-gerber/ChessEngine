@@ -2,17 +2,26 @@
 // Created by Marcel on 08.03.2024.
 //
 
-#ifndef CHESSENGINE_MISC_HPP
-#define CHESSENGINE_MISC_HPP
+#ifndef CHESSENGINE_BITS_HPP
+#define CHESSENGINE_BITS_HPP
 
 #include <cstdint>
 #include <cassert>
 #include <bit>
 #include <vector>
+#include <iostream>
 
-class Misc {
+class Bits {
 public:
-    static bool isSet(uint64_t &bits, const uint8_t &index) {
+    static void set(uint64_t &bits, const uint8_t &index) {
+        bits |= (1ULL << index);
+    }
+
+    static void unset(uint64_t &bits, const uint8_t &index) {
+        bits &= ~(1ULL << index);
+    }
+
+    static bool isSet(const uint64_t &bits, const uint8_t &index) {
         return bits & (1ULL << index);
     }
 
@@ -41,7 +50,7 @@ public:
         return indices;
     }
 
-    static void printBits(const uint64_t &bits) {
+    static void print(const uint64_t &bits) {
         int index = 56;
 
         for(int i = 0; i < 8; i++) {
