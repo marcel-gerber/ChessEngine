@@ -68,7 +68,7 @@ public:
     
     [[nodiscard]] uint8_t getKingIndex(Color color) const {
         uint64_t bb_king = getPieces(color, PieceType::KING);
-        return Bits::popcount(bb_king);
+        return Bits::lsb(bb_king);
     }
 
     void print() const {

@@ -33,6 +33,10 @@ public:
         return std::popcount(bits);
     }
 
+    static constexpr uint8_t lsb(uint64_t &bits) {
+        return std::countr_zero(bits);
+    }
+
     static constexpr uint8_t pop(uint64_t &bits) {
         uint8_t index = std::countr_zero(bits);
         bits &= bits - 1;

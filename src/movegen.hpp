@@ -47,8 +47,10 @@ public:
         }
     }
 
-    static uint64_t pinMaskHV(const Board &board, Color color, uint64_t bb_opp, uint64_t bb_us) {
+    static uint64_t pinMaskHV(const Board &board, Color color) {
         const uint8_t king_index = board.getKingIndex(color);
+        const uint64_t bb_us = board.getSide(color);
+        const uint64_t bb_opp = board.getSide(color.getOppositeColor());
 
         const uint64_t opp_rook = board.getPieces(color.getOppositeColor(), PieceType::ROOK);
         const uint64_t opp_queen = board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
@@ -67,8 +69,10 @@ public:
         return pin_hv;
     }
 
-    static uint64_t pinMaskDiagonal(const Board &board, Color color, uint64_t bb_opp, uint64_t bb_us) {
+    static uint64_t pinMaskDiagonal(const Board &board, Color color) {
         const uint8_t king_index = board.getKingIndex(color);
+        const uint64_t bb_us = board.getSide(color);
+        const uint64_t bb_opp = board.getSide(color.getOppositeColor());
 
         const uint64_t opp_bishop = board.getPieces(color.getOppositeColor(), PieceType::BISHOP);
         const uint64_t opp_queen = board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
