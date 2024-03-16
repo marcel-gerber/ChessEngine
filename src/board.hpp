@@ -19,14 +19,14 @@ private:
     uint64_t bb_pieces[6] = { 0 };
     uint64_t bb_sides[2] = { 0 };
 
-    CastlingRights castling_rights;
+    Castling castling_rights;
     Square en_passant_square;
     uint8_t half_move_clock;
     Color side_to_move;
 
 public:
     Board() {
-        castling_rights = CastlingRights();
+        castling_rights = Castling();
         en_passant_square = Square::NONE;
         side_to_move = Color::WHITE;
     }
@@ -92,11 +92,11 @@ public:
         std::cout << ss.str();
     }
 
-    CastlingRights* getCastlingRights() {
+    [[nodiscard]] Castling* getCastlingRights() {
         return &castling_rights;
     }
 
-    Square* getEnPassantSquare() {
+    [[nodiscard]] const Square* getEnPassantSquare() const {
         return &en_passant_square;
     }
 

@@ -6,6 +6,7 @@
 #define CHESSENGINE_MOVEGEN_HPP
 
 #include <cstdint>
+#include <tuple>
 #include "grid.hpp"
 #include "attacks.hpp"
 
@@ -119,6 +120,126 @@ public:
         attacked |= Attacks::getKingAttacks(king_index);
 
         return attacked;
+    }
+
+    static std::tuple<uint64_t, uint8_t> checkMask(const Board &board, Color color) {
+        uint8_t double_check = 0;
+        Color opp_color = color.getOppositeColor();
+        const uint8_t king_index = board.getKingIndex(color);
+
+        const uint64_t opp_queen = board.getPieces(opp_color, PieceType::QUEEN);
+
+        const uint64_t opp_pawns = board.getPieces(opp_color, PieceType::PAWN);
+        const uint64_t opp_knights = board.getPieces(opp_color, PieceType::KNIGHT);
+        const uint64_t opp_bishops = board.getPieces(opp_color, PieceType::BISHOP) | opp_queen;
+        const uint64_t opp_rooks = board.getPieces(opp_color, PieceType::ROOK) | opp_queen;
+
+        // knight checks
+        uint64_t knight_attacks = Attacks::getKnightAttacks(king_index) & opp_knights;
+        double_check += bool(knight_attacks);
+
+        // initializing check_mask
+        uint64_t check_mask = knight_attacks;
+
+        // pawn checks
+        uint64_t pawn_attacks = Attacks::getPawnAttacks(opp_color, king_index) & opp_pawns;
+        double_check += bool(pawn_attacks);
+        check_mask |= pawn_attacks;
+
+        // bishop checks
+        uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, board.getOccupancy()) & opp_bishops;
+
+        if(bishop_attacks) {
+            const uint8_t index = Bits::lsb(bishop_attacks);
+            check_mask |= SQUARES_BETWEEN[king_index][index] | Square::toBitboard(index);
+            double_check++;
+        }
+
+        // rook checks
+        uint64_t rook_attacks = Attacks::getRookAttacks(king_index, board.getOccupancy()) & opp_rooks;
+
+        if(rook_attacks) {
+            if(Bits::popcount(rook_attacks) > 1) {
+                return {check_mask, 2};
+            }
+
+            const uint8_t index = Bits::lsb(rook_attacks);
+            check_mask |= SQUARES_BETWEEN[king_index][index] | Square::toBitboard(index);
+            double_check++;
+        }
+
+        if(!check_mask) {
+            return {0xFFFFFFFFFFFFFFFFULL, double_check};
+        }
+
+        return {check_mask, double_check};
+    }
+
+    static void generatePawnMoves() {
+        // TODO
+    }
+
+    static uint64_t generateKnightMoves(const uint8_t &index) {
+        return Attacks::getKnightAttacks(index);
+    }
+
+    static uint64_t generateBishopMoves(const uint8_t &index, const uint64_t &pin_d, const uint64_t &bb_occupied) {
+        // If the bishop is pinned diagonally, it can only move on this diagonal
+        if(pin_d & Square::toBitboard(index)) {
+            return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        }
+        return Attacks::getBishopAttacks(index, bb_occupied);
+    }
+
+    static uint64_t generateRookMoves(const uint8_t &index, const uint64_t &pin_hv, const uint64_t &bb_occupied) {
+        // If the rook is pinned horizontally or vertically, it can only move horizontal/vertical
+        if(pin_hv & Square::toBitboard(index)) {
+            return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        }
+        return Attacks::getRookAttacks(index, bb_occupied);
+    }
+
+    static uint64_t generateQueenMoves(const uint8_t &index, const uint64_t &pin_hv,
+                                       const uint64_t &pin_d, const uint64_t &bb_occupied) {
+        uint64_t bb_square = Square::toBitboard(index);
+
+        if(pin_hv & bb_square) {
+            return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        }
+
+        if(pin_d & bb_square) {
+            return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        }
+
+        uint64_t moves = 0ULL;
+        moves |= Attacks::getRookAttacks(index, bb_occupied);
+        moves |= Attacks::getBishopAttacks(index, bb_occupied);
+
+        return moves;
+    }
+
+    static uint64_t generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked,
+                                      const uint64_t &bb_movable_squares) {
+        return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
+    }
+
+    static uint64_t generateCastleMoves(Board &board) {
+        const auto castling_rights = board.getCastlingRights();
+        if(castling_rights->hasNoCastling()) return 0ULL;
+
+        uint64_t moves = 0ULL;
+
+        for(const auto castle : {Castling::WHITE_00, Castling::WHITE_000, Castling::BLACK_00, Castling::BLACK_000}) {
+            if(!castling_rights->has(castle)) continue;
+
+            const uint8_t end_king_index = Castling::getEndingKingIndex(castle);
+            const uint8_t end_rook_index = Castling::getEndingRookIndex(castle);
+            const uint8_t start_rook_index = Castling::getStartingRookIndex(castle);
+
+            // TODO
+        }
+
+        return moves;
     }
 
 };

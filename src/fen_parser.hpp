@@ -31,7 +31,7 @@ public:
         const auto split = splitString(fen);
         assert(!split.empty());
 
-        const auto pieces = split[0];
+        const auto& pieces = split[0];
         const auto side_to_move = split.size() > 1 ? split[1] : "w";
         const auto castling = split.size() > 2 ? split[2] : "-";
         const auto en_passant = split.size() > 3 ? split[3] : "-";
@@ -66,26 +66,28 @@ public:
             }
         }
 
+        const auto castling_rights = board.getCastlingRights();
+
         for(const char &c : castling) {
             if(c == '-') break;
 
             if(c == 'K') {
-                board.getCastlingRights()->set(Castling::WHITE_00);
+                castling_rights->set(Castling::WHITE_00);
                 continue;
             }
 
             if(c == 'Q') {
-                board.getCastlingRights()->set(Castling::WHITE_000);
+                castling_rights->set(Castling::WHITE_000);
                 continue;
             }
 
             if(c == 'k') {
-                board.getCastlingRights()->set(Castling::BLACK_00);
+                castling_rights->set(Castling::BLACK_00);
                 continue;
             }
 
             if(c == 'q') {
-                board.getCastlingRights()->set(Castling::BLACK_000);
+                castling_rights->set(Castling::BLACK_000);
                 continue;
             }
         }
