@@ -223,20 +223,44 @@ public:
         return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
     }
 
-    static uint64_t generateCastleMoves(Board &board) {
+    static uint64_t generateCastleMoves(Board &board, const Color &color, const uint64_t &bb_attacked) {
         const auto castling_rights = board.getCastlingRights();
         if(castling_rights->hasNoCastling()) return 0ULL;
 
+        const uint8_t king_index = board.getKingIndex(color);
         uint64_t moves = 0ULL;
 
-        for(const auto castle : {Castling::WHITE_00, Castling::WHITE_000, Castling::BLACK_00, Castling::BLACK_000}) {
+        for(const auto castle : Castling::getCastlings(color)) {
             if(!castling_rights->has(castle)) continue;
 
             const uint8_t end_king_index = Castling::getEndingKingIndex(castle);
-            const uint8_t end_rook_index = Castling::getEndingRookIndex(castle);
             const uint8_t start_rook_index = Castling::getStartingRookIndex(castle);
 
-            // TODO
+            // Squares that have to be empty
+            const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][start_rook_index];
+
+            // Squares that are not allowed to be attacked by the enemy
+            const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][end_king_index];
+
+            // Bitboard with all empty squares and squares that are not attacked by the enemy
+            const uint64_t empty_not_attacked = ~board.getOccupancy() & ~bb_attacked;
+
+            // If the squares that have to be empty are not empty -> continue
+            if((not_occ_path & ~board.getOccupancy()) != not_occ_path) {
+                continue;
+            }
+
+            // If the squares that the king moves through are attacked -> continue
+            if((not_attacked_path & empty_not_attacked) != not_attacked_path) {
+                continue;
+            }
+
+            // If the king is in check -> continue
+            if((bb_attacked & Square::toBitboard(king_index)) != 0) {
+                continue;
+            }
+
+            moves |= Square::toBitboard(start_rook_index);
         }
 
         return moves;

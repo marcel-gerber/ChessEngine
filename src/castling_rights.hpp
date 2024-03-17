@@ -6,6 +6,7 @@
 #define CHESSENGINE_CASTLING_RIGHTS_HPP
 
 #include <cstdint>
+#include <vector>
 
 class Castling {
 public:
@@ -40,6 +41,17 @@ public:
 
     [[nodiscard]] bool hasNoCastling() const {
         return castling_rights == static_cast<uint8_t>(NO_CASTLING);
+    }
+
+    static constexpr std::vector<Value> getCastlings(const Color &color) {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                return {WHITE_00, WHITE_000};
+            case static_cast<uint8_t>(Color::BLACK):
+                return {BLACK_00, BLACK_000};
+            default:
+                return { };
+        }
     }
 
     static constexpr uint8_t getEndingKingIndex(const Value &castling) {
