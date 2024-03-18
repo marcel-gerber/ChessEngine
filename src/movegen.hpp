@@ -14,6 +14,17 @@ class MoveGen {
 private:
     static inline uint64_t SQUARES_BETWEEN[64][64] = { 0 };
 
+    static constexpr uint64_t shift(uint64_t bits, const int8_t &direction) {
+        switch(direction) {
+            case 8:
+                return bits << 8;
+            case -8:
+                return bits >> 8;
+            default:
+                return 0ULL;
+        }
+    }
+
 public:
     static void initSquaresBetween() {
         uint64_t squares_bb = 0ULL;
@@ -95,11 +106,13 @@ public:
     static uint64_t attackedSquares(const Board &board, Color color) {
         const uint64_t occupied = board.getOccupancy();
         const uint64_t queens = board.getPieces(color, PieceType::QUEEN);
+
+        uint64_t pawns = board.getPieces(color, PieceType::PAWN);
         uint64_t knights = board.getPieces(color, PieceType::KNIGHT);
         uint64_t bishops = board.getPieces(color, PieceType::BISHOP) | queens;
         uint64_t rooks = board.getPieces(color, PieceType::ROOK) | queens;
 
-        uint64_t attacked = Attacks::getPawnLeftAttacks(board, color) | Attacks::getPawnRightAttacks(board, color);
+        uint64_t attacked = Attacks::getPawnLeftAttacks(pawns, color) | Attacks::getPawnRightAttacks(pawns, color);
 
         while(knights) {
             const uint8_t index = Bits::pop(knights);
@@ -175,8 +188,46 @@ public:
         return {check_mask, double_check};
     }
 
-    static void generatePawnMoves() {
-        // TODO
+    static void generatePawnMoves(const Board &board, Color color, const uint64_t &pin_hv,
+                                  const uint64_t &pin_d, const uint64_t &checkmask) {
+        const uint64_t bb_opp = board.getSide(color.getOppositeColor());
+
+        const int8_t UP = color == Color::WHITE ? 8 : -8;
+        const int8_t DOWN = color == Color::WHITE ? -8 : 8;
+        const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
+        const int8_t DOWN_RIGHT = color == Color::WHITE ? -7 : 7;
+
+        const uint64_t RANK_BEFORE_PROMO = Rank::getRankBeforePromo(color);
+        const uint64_t RANK_PROMO = Rank::getPromoRank(color);
+        const uint64_t DOUBLE_PUSH_RANK = Rank::getDoublePushRank(color);
+
+        const uint64_t pawns = board.getPieces(color, PieceType::PAWN);
+
+        // These pawns can maybe take left or right
+        const uint64_t pawns_lr = pawns & ~pin_hv;
+        const uint64_t unpinnedpawns_lr = pawns_lr & ~pin_d;
+        const uint64_t pinnedpawns_lr = pawns_lr & pin_d;
+
+        uint64_t l_pawns = Attacks::getPawnLeftAttacks(unpinnedpawns_lr, color)
+                | (Attacks::getPawnLeftAttacks(pinnedpawns_lr, color) & pin_d);
+
+        uint64_t r_pawns = Attacks::getPawnRightAttacks(unpinnedpawns_lr, color)
+                | (Attacks::getPawnRightAttacks(pinnedpawns_lr, color) & pin_d);
+
+        // Prune moves that don't capture a piece and are not on the checkmask
+        l_pawns &= bb_opp & checkmask;
+        r_pawns &= bb_opp & checkmask;
+
+        // These pawns can walk forward
+        const uint64_t pawns_hv = pawns & ~pin_d;
+
+        const uint64_t pawns_pinned_hv = pawns_hv & pin_hv;
+        const uint64_t pawns_unpinned_hv = pawns_hv & ~pin_hv;
+
+        const uint64_t single_push_unpinned = shift(pawns_unpinned_hv, UP) & ~board.getOccupancy();
+        const uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & pin_hv & ~board.getOccupancy();
+
+        uint64_t single_push = (single_push_unpinned | single_push_pinned) & checkmask;
     }
 
     static uint64_t generateKnightMoves(const uint8_t &index) {

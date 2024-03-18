@@ -151,15 +151,13 @@ private:
 
 public:
     /// Get the pawns right-side attacks from the colors perspective
-    static uint64_t getPawnRightAttacks(const Board &board, Color &color) {
-        uint64_t pawns = board.getPieces(color, PieceType::PAWN);
-        return color == Color::WHITE ? (pawns << 9 & ~File::FILE_ABB) : (pawns >> 9 & ~File::FILE_HBB);
+    static uint64_t getPawnRightAttacks(const uint64_t &bb_pawns, Color &color) {
+        return color == Color::WHITE ? (bb_pawns << 9 & ~File::FILE_ABB) : (bb_pawns >> 9 & ~File::FILE_HBB);
     }
 
     /// Get the pawns left-side attacks from the colors perspective
-    static uint64_t getPawnLeftAttacks(const Board &board, Color &color) {
-        uint64_t pawns = board.getPieces(color, PieceType::PAWN);
-        return color == Color::WHITE ? (pawns << 7 & ~File::FILE_HBB) : (pawns >> 7 & ~File::FILE_ABB);
+    static uint64_t getPawnLeftAttacks(const uint64_t &bb_pawns, Color &color) {
+        return color == Color::WHITE ? (bb_pawns << 7 & ~File::FILE_HBB) : (bb_pawns >> 7 & ~File::FILE_ABB);
     }
 
     static uint64_t getPawnAttacks(Color &color, const uint8_t &index) {

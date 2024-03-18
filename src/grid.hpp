@@ -92,6 +92,39 @@ public:
         }
     }
 
+    static constexpr uint64_t getRankBeforePromo(const Color &color) {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                return RANK_7BB;
+            case static_cast<uint8_t>(Color::BLACK):
+                return RANK_2BB;
+            default:
+                return 0ULL;
+        }
+    }
+
+    static constexpr uint64_t getPromoRank(const Color &color) {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                return RANK_8BB;
+            case static_cast<uint8_t>(Color::BLACK):
+                return RANK_1BB;
+            default:
+                return 0ULL;
+        }
+    }
+
+    static constexpr uint64_t getDoublePushRank(const Color &color) {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                return RANK_3BB;
+            case static_cast<uint8_t>(Color::BLACK):
+                return RANK_6BB;
+            default:
+                return 0ULL;
+        }
+    }
+
     static constexpr uint64_t RANK_1BB = 0xFF;
     static constexpr uint64_t RANK_2BB = RANK_1BB << (8 * 1);
     static constexpr uint64_t RANK_3BB = RANK_1BB << (8 * 2);
