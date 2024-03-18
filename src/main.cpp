@@ -28,7 +28,7 @@ int main() {
     Bits::print(mask);
     std::cout << +double_check << std::endl;*/
 
-    Fen::setFen(board, "r2qkbnr/p1pp1ppp/bp1np3/8/3PPB2/5N2/PPPQ1PPP/R3K2R w KQkq - 0 1");
+    Fen::setFen(board, "r1bqk1nr/p1pp1ppp/1p1np3/6b1/1Q6/8/PPP4P/R3K2R w KQkq - 0 1");
     board.print();
 
     uint64_t attacked = MoveGen::attackedSquares(board, Color::BLACK);

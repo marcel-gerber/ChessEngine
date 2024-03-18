@@ -240,7 +240,7 @@ public:
             const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][start_rook_index];
 
             // Squares that are not allowed to be attacked by the enemy
-            const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][end_king_index];
+            const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][end_king_index] | Square::toBitboard(end_king_index);
 
             // Bitboard with all empty squares and squares that are not attacked by the enemy
             const uint64_t empty_not_attacked = ~board.getOccupancy() & ~bb_attacked;
