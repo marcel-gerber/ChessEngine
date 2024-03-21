@@ -21,8 +21,12 @@ public:
 
     PieceType() = default;
 
-    PieceType(Value pieceType) : pieceType(pieceType) {
+    constexpr PieceType(Value pieceType) : pieceType(pieceType) {
 
+    }
+
+    constexpr explicit PieceType(uint8_t type) {
+        pieceType = static_cast<Value>(type);
     }
 
     [[nodiscard]] constexpr uint8_t getIndex() const {
@@ -31,6 +35,11 @@ public:
 
     [[nodiscard]] constexpr Value getValue() const {
         return pieceType;
+    }
+
+    // used for Move::create
+    constexpr uint16_t operator-(const PieceType &pt) const {
+        return getIndex() - pt.getIndex();
     }
 
     static constexpr Value PAWN = Value::PAWN;
