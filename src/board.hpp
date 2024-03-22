@@ -108,8 +108,8 @@ public:
         this->side_to_move = color;
     }
 
-    uint8_t getSideToMove() {
-        return this->side_to_move.getValue();
+    [[nodiscard]] Color getSideToMove() const {
+        return this->side_to_move;
     }
 
     void setHalfMoveClock(const uint8_t &half_move) {

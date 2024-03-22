@@ -21,7 +21,7 @@ public:
 
     }
 
-    Value getOppositeColor() {
+    [[nodiscard]] constexpr Value getOppositeColor() const {
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 

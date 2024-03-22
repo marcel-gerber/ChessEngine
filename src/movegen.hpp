@@ -340,12 +340,12 @@ public:
         return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
     }
 
-    static uint64_t generateCastleMoves(Board &board, const Color &color, const uint64_t &bb_attacked) {
+    static void generateCastleMoves(Board &board, const Color &color, std::vector<Move> &moves,
+                                        const uint64_t &bb_attacked) {
         const auto castling_rights = board.getCastlingRights();
-        if(castling_rights->hasNoCastling()) return 0ULL;
+        if(castling_rights->hasNoCastling()) return;
 
         const uint8_t king_index = board.getKingIndex(color);
-        uint64_t moves = 0ULL;
 
         for(const auto castle : Castling::getCastlings(color)) {
             if(!castling_rights->has(castle)) continue;
@@ -377,10 +377,77 @@ public:
                 continue;
             }
 
-            moves |= Square::toBitboard(start_rook_index);
+            moves.push_back(Move::create<MoveType::CASTLING>(king_index, end_king_index));
         }
+    }
 
-        return moves;
+    template<typename T>
+    static void addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T function) {
+        while(bb_from) {
+            const uint8_t index_from = Bits::pop(bb_from);
+            uint64_t bb_moves = function(index_from);
+
+            while(bb_moves) {
+                const uint8_t index_to = Bits::pop(bb_moves);
+                moves.push_back(Move::create<MoveType::NORMAL>(index_from, index_to));
+            }
+        }
+    }
+
+    static void legalMoves(Board &board, const Color &color, std::vector<Move> &moves) {
+        uint64_t bb_king = board.getPieces(color, PieceType::KING);
+
+        uint64_t bb_occupied = board.getOccupancy();
+        uint64_t bb_occ_us = board.getSide(color);
+
+        // All empty squares and opponent pieces
+        uint64_t movable_squares = ~bb_occ_us;
+
+        auto [checkmask, double_check] = MoveGen::checkMask(board, color);
+        uint64_t pin_hv = pinMaskHV(board, color);
+        uint64_t pin_d = pinMaskDiagonal(board, color);
+
+        // Squares that are attacked by the enemy
+        uint64_t attacked = attackedSquares(board, color.getOppositeColor());
+
+        // King moves
+        addMoveToMoveList(moves, bb_king, [&](uint8_t index) {
+            return generateKingMoves(index, attacked, movable_squares);
+        });
+
+        // Castling moves
+        generateCastleMoves(board, color, moves, attacked);
+
+        movable_squares &= checkmask;
+
+        if(double_check == 2) return;
+
+        // Pawn moves
+        generatePawnMoves(board, color, moves, pin_hv, pin_d, checkmask);
+
+        // Knight moves (those that are not pinned)
+        uint64_t bb_knights = board.getPieces(color, PieceType::KNIGHT) & ~(pin_hv | pin_d);
+        addMoveToMoveList(moves, bb_knights, [&](uint8_t index) {
+            return generateKnightMoves(index) & movable_squares;
+        });
+
+        // Bishop moves (those that are not horizontally pinned)
+        uint64_t bb_bishops = board.getPieces(color, PieceType::BISHOP) & ~pin_hv;
+        addMoveToMoveList(moves, bb_bishops, [&](uint8_t index) {
+            return generateBishopMoves(index, pin_d, bb_occupied) & movable_squares;
+        });
+
+        // Rook moves (those that are not diagonally pinned)
+        uint64_t bb_rooks = board.getPieces(color, PieceType::ROOK) & ~pin_d;
+        addMoveToMoveList(moves, bb_rooks, [&](uint8_t index) {
+            return generateRookMoves(index, pin_hv, bb_occupied) & movable_squares;
+        });
+
+        // Queen moves (those that are not diagonally pinned)
+        uint64_t bb_queens = board.getPieces(color, PieceType::QUEEN) & ~(pin_hv & pin_d);
+        addMoveToMoveList(moves, bb_queens, [&](uint8_t index) {
+            return generateQueenMoves(index, pin_hv, pin_d, bb_occupied) & movable_squares;
+        });
     }
 
 };
