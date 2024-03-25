@@ -25,7 +25,7 @@ public:
 
     }
 
-    constexpr explicit PieceType(uint8_t type) {
+    constexpr explicit PieceType(const uint8_t &type) {
         pieceType = static_cast<Value>(type);
     }
 
@@ -77,6 +77,12 @@ public:
 
     Piece(Piece::Value piece) : piece(piece) {
 
+    }
+
+    Piece(PieceType type, Color color) {
+        if(color == Color::NONE) piece = Piece::NONE;
+        if(type.getValue() == PieceType::NONE) piece = Piece::NONE;
+        piece = static_cast<Value>(color.getValue() * 6 + type.getIndex());
     }
 
     Piece(const char &c) : piece(Value::NONE) {

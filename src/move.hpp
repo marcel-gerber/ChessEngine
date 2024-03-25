@@ -50,7 +50,7 @@ public:
     }
 
     // Get the PieceType of the promotion
-    [[nodiscard]] constexpr uint16_t promotion_type() const {
+    [[nodiscard]] constexpr uint8_t promotion_type() const {
         return (((move >> 12) & 3) + static_cast<uint8_t>(PieceType::KNIGHT));
     }
 

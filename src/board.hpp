@@ -8,54 +8,68 @@
 #include <cstdint>
 #include <cassert>
 #include <sstream>
+#include <stack>
 #include "color.hpp"
 #include "piece.hpp"
 #include "castling_rights.hpp"
 #include "grid.hpp"
 #include "misc/bits.hpp"
+#include "move.hpp"
+#include "attacks.hpp"
 
 class Board {
 private:
+    struct StateInfo {
+        Castling castling_rights;
+        Square en_passant;
+        uint8_t half_move_clock;
+        Piece captured;
+
+        StateInfo(const Castling &castling, const Square &en_passant, const uint8_t &half_moves, const Piece &captured) :
+            castling_rights(castling),
+            en_passant(en_passant),
+            half_move_clock(half_moves),
+            captured(captured) { }
+    };
+
     uint64_t bb_pieces[6] = { 0 };
     uint64_t bb_sides[2] = { 0 };
+    Piece pieces[64] = { };
 
     Castling castling_rights;
-    Square en_passant_square;
-    uint8_t half_move_clock;
-    Color side_to_move;
+    Square en_passant_square = Square::NONE;
+    uint8_t half_move_clock = 0;
+    Color side_to_move = Color::WHITE;
+
+    std::stack<StateInfo> prev_state_infos;
 
 public:
     Board() {
+        for(auto & piece : pieces) {
+            piece = Piece::NONE;
+        }
+
         castling_rights = Castling();
-        en_passant_square = Square::NONE;
-        side_to_move = Color::WHITE;
     }
 
-    void placePiece(Piece &piece, uint8_t &index) {
+    void placePiece(const Piece &piece, const uint8_t &index) {
         Bits::set(bb_pieces[piece.getType().getIndex()], index);
         Bits::set(bb_sides[piece.getColor().getValue()], index);
+        pieces[index] = piece;
+    }
+
+    void removePiece(const Piece &piece, const uint8_t &index) {
+        Bits::unset(bb_pieces[piece.getType().getIndex()], index);
+        Bits::unset(bb_sides[piece.getColor().getValue()], index);
+        pieces[index] = Piece::NONE;
     }
 
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const {
         return bb_sides[color.getValue()] & bb_pieces[pieceType.getIndex()];
     }
 
-    Piece getPiece(uint8_t &index) const {
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::PAWN), index)) return Piece::WHITE_PAWN;
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::KNIGHT), index)) return Piece::WHITE_KNIGHT;
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::BISHOP), index)) return Piece::WHITE_BISHOP;
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::ROOK), index)) return Piece::WHITE_ROOK;
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::QUEEN), index)) return Piece::WHITE_QUEEN;
-        if(Bits::isSet(getPieces(Color::WHITE, PieceType::KING), index)) return Piece::WHITE_KING;
-
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::PAWN), index)) return Piece::BLACK_PAWN;
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::KNIGHT), index)) return Piece::BLACK_KNIGHT;
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::BISHOP), index)) return Piece::BLACK_BISHOP;
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::ROOK), index)) return Piece::BLACK_ROOK;
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::QUEEN), index)) return Piece::BLACK_QUEEN;
-        if(Bits::isSet(getPieces(Color::BLACK, PieceType::KING), index)) return Piece::BLACK_KING;
-
-        return Piece::NONE;
+    [[nodiscard]] Piece getPiece(const uint8_t &index) const {
+        return pieces[index];
     }
 
     [[nodiscard]] uint64_t getSide(Color color) const {
@@ -71,15 +85,112 @@ public:
         return Bits::lsb(bb_king);
     }
 
+    void makeMove(const Move &move) {
+        const uint8_t from = move.from_index();
+        const uint8_t to = move.to_index();
+        const uint16_t type = move.type();
+
+        const Piece moved = getPiece(from);
+        const Piece captured = getPiece(to);
+
+        StateInfo stateInfo = StateInfo(castling_rights, en_passant_square, half_move_clock, captured);
+        prev_state_infos.push(stateInfo);
+
+        half_move_clock++;
+
+        if(en_passant_square.getValue() != Square::NONE) {
+            en_passant_square = Square::NONE;
+        }
+
+        if(captured != Piece::NONE) {
+            removePiece(captured, to);
+
+            // Remove castling right if rook has been captured
+            if(captured.getType().getValue() == PieceType::ROOK) {
+                const Castling::Value castling = Castling::getFromRookIndex(to);
+                this->castling_rights.unset(castling);
+            }
+        }
+
+        if(castling_rights.has(side_to_move)) {
+            if(moved.getType().getValue() == PieceType::KING) {
+                // Remove castling rights if king moves
+                castling_rights.unset(side_to_move);
+            } else if(moved.getType().getValue() == PieceType::ROOK) {
+                // Remove castling rights if rook moves
+                const Castling::Value castling = Castling::getFromRookIndex(to);
+                this->castling_rights.unset(castling);
+            }
+        }
+
+        if(moved.getType().getValue() == PieceType::PAWN) {
+            half_move_clock = 0;
+
+            // Double push
+            if(std::abs(from - to) == 16) {
+                const uint8_t ep_square_index = Square::getEnPassantSquare(to);
+                const uint64_t ep_mask = Attacks::getPawnAttacks(side_to_move, ep_square_index);
+
+                // if enemy pawns are attacking the en passant square -> set board's en passant square
+                if(ep_mask & getPieces(side_to_move.getOppositeColor(), PieceType::PAWN)) {
+                    en_passant_square = Square(ep_square_index);
+                }
+            }
+        }
+
+        if(type == MoveType::CASTLING) {
+            const Castling::Value castling = Castling::getFromKingIndex(to);
+            const uint8_t starting_rook_index = Castling::getStartingRookIndex(castling);
+            const uint8_t ending_rook_index = Castling::getEndingRookIndex(castling);
+
+            const Piece rook = getPiece(starting_rook_index);
+
+            // Remove king and rook
+            removePiece(moved, from);
+            removePiece(rook, starting_rook_index);
+
+            // Place king and rook at new positions
+            placePiece(moved, to);
+            placePiece(rook, ending_rook_index);
+        } else if(type == MoveType::PROMOTION) {
+            const PieceType promotion_type = PieceType(move.promotion_type());
+            const Piece promotion_piece = Piece(promotion_type, side_to_move);
+
+            removePiece(moved, from);
+            placePiece(promotion_piece, to);
+        } else if(type == MoveType::EN_PASSANT) {
+            const uint8_t ep_square_index = Square::getEnPassantSquare(to);
+            const Piece pawn = Piece(PieceType::PAWN, side_to_move.getOppositeColor());
+
+            // TODO: understanding this ??
+            removePiece(pawn, ep_square_index);
+        }
+
+        side_to_move = side_to_move.getOppositeColor();
+    }
+
+    void unmakeMove(const Move &move) {
+        const StateInfo prev = prev_state_infos.top();
+        prev_state_infos.pop();
+
+        Castling castling = prev.castling_rights;
+        Square en_passant = prev.en_passant;
+        uint8_t half_move = prev.half_move_clock;
+        Piece captured = prev.captured;
+
+        // TODO
+    }
+
     void print() const {
         std::stringstream ss;
         uint8_t index = 56;
+        Piece piece{};
 
         ss << "---------------------------------\n";
 
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
-                Piece piece = getPiece(index);
+                piece = getPiece(index);
                 ss << "| " << piece.getCharacter() << " ";
 
                 index++;

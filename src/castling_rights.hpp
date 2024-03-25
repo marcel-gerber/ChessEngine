@@ -34,9 +34,35 @@ public:
         castling_rights &= ~static_cast<uint8_t>(castling);
     }
 
+    void unset(const Color color) {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                unset(WHITE_00);
+                unset(WHITE_000);
+                return;
+            case static_cast<uint8_t>(Color::BLACK):
+                unset(BLACK_00);
+                unset(BLACK_000);
+                return;
+            default:
+                return;
+        }
+    }
+
     [[nodiscard]] bool has(const Value &castling) const {
         const auto value = static_cast<uint8_t>(castling);
         return (castling_rights & value) == value;
+    }
+
+    [[nodiscard]] bool has(const Color color) const {
+        switch(color.getValue()) {
+            case static_cast<uint8_t>(Color::WHITE):
+                return has(WHITE_00) || has(WHITE_000);
+            case static_cast<uint8_t>(Color::BLACK):
+                return has(BLACK_00) || has(BLACK_000);
+            default:
+                return false;
+        }
     }
 
     [[nodiscard]] bool hasNoCastling() const {
@@ -96,6 +122,38 @@ public:
                 return 56;
             default:
                 return -1;
+        }
+    }
+
+    // Returns the castling based on the starting rook index
+    static constexpr Value getFromRookIndex(const uint8_t &index) {
+        switch(index) {
+            case 0:
+                return WHITE_000;
+            case 7:
+                return WHITE_00;
+            case 56:
+                return BLACK_000;
+            case 63:
+                return BLACK_00;
+            default:
+                return NO_CASTLING;
+        }
+    }
+
+    // Returns the castling based on the ending king index
+    static constexpr Value getFromKingIndex(const uint8_t &index) {
+        switch(index) {
+            case 2:
+                return WHITE_000;
+            case 6:
+                return WHITE_00;
+            case 58:
+                return BLACK_000;
+            case 62:
+                return BLACK_00;
+            default:
+                return NO_CASTLING;
         }
     }
 

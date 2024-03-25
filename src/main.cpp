@@ -30,12 +30,16 @@ int main() {
     std::cout << +double_check << std::endl;*/
 
     Fen::setFen(board, "r1bqk1nr/p1pp1ppp/1p1np3/6b1/1Q6/5N2/PPP4P/R3K2R w KQkq - 0 1");
-    board.print();
+    // board.print();
 
     std::vector<Move> moves = { };
 
     MoveGen::legalMoves(board, Color::WHITE, moves);
-    std::cout << moves.size() << std::endl;
+    // std::cout << moves.size() << std::endl;
+
+    Move move = moves[4];
+    board.makeMove(move);
+    board.print();
 
 //    uint8_t from = 48;
 //    uint8_t to = 56;

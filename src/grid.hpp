@@ -183,12 +183,20 @@ public:
         return static_cast<uint8_t>(square);
     }
 
+    [[nodiscard]] constexpr Value getValue() const {
+        return square;
+    }
+
     [[nodiscard]] bool isValid() const {
         return (square >= Value::A1 && square <= Value::H8);
     }
 
     static uint64_t toBitboard(const uint8_t &index) {
         return (1ULL << index);
+    }
+
+    static constexpr uint8_t getEnPassantSquare(const uint8_t &index) {
+        return index ^ 8;
     }
 
     // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks

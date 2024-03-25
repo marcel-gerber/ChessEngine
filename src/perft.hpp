@@ -17,6 +17,20 @@ private:
     uint64_t perft(int depth) {
         std::vector<Move> moves;
         MoveGen::legalMoves(board, board.getSideToMove(), moves);
+
+        if(depth == 1) {
+            return moves.size();
+        }
+
+        uint64_t nodes = 0ULL;
+
+        for(const auto &move : moves) {
+            board.makeMove(move);
+            nodes += perft(depth - 1);
+            board.unmakeMove(move);
+        }
+
+        return nodes;
     }
 };
 
