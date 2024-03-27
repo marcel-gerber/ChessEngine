@@ -191,6 +191,14 @@ public:
         return (square >= Value::A1 && square <= Value::H8);
     }
 
+    static constexpr std::string toString(const uint8_t &index) {
+        std::string string;
+        string += 'a' + (index & 7);
+        string += '1' + (index >> 3);
+
+        return string;
+    }
+
     static uint64_t toBitboard(const uint8_t &index) {
         return (1ULL << index);
     }

@@ -189,7 +189,7 @@ public:
         return {check_mask, double_check};
     }
 
-    static void generatePawnMoves(const Board &board, Color color, std::vector<Move> &movelist, const uint64_t &pin_hv,
+    static void generatePawnMoves(const Board &board, Color color, std::vector<Move> &moves, const uint64_t &pin_hv,
                                   const uint64_t &pin_d, const uint64_t &checkmask) {
         const uint64_t bb_opp = board.getSide(color.getOppositeColor());
 
@@ -243,28 +243,28 @@ public:
             // Pawn promotions when capture a piece to the left
             while(promo_left) {
                 const uint8_t index = Bits::pop(promo_left);
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::KNIGHT));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::BISHOP));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::ROOK));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::QUEEN));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::KNIGHT));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::BISHOP));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::ROOK));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::QUEEN));
             }
 
             // Pawn promotions when capture a piece to the right
             while(promo_right) {
                 const uint8_t index = Bits::pop(promo_right);
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::KNIGHT));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::BISHOP));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::ROOK));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::QUEEN));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::KNIGHT));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::BISHOP));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::ROOK));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::QUEEN));
             }
 
-            // Pawn promotions when capture a piece to the left
+            // Pawn promotions when pushing to the promotion Rank
             while(promo_push) {
                 const uint8_t index = Bits::pop(promo_push);
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::KNIGHT));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::BISHOP));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::ROOK));
-                movelist.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::QUEEN));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::KNIGHT));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::BISHOP));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::ROOK));
+                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::QUEEN));
             }
         }
 
@@ -275,25 +275,44 @@ public:
 
         while(l_pawns) {
             const uint8_t index = Bits::pop(l_pawns);
-            movelist.push_back(Move::create<MoveType::NORMAL>(index + DOWN_RIGHT, index));
+            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN_RIGHT, index));
         }
 
         while(r_pawns) {
             const uint8_t index = Bits::pop(r_pawns);
-            movelist.push_back(Move::create<MoveType::NORMAL>(index + DOWN_LEFT, index));
+            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN_LEFT, index));
         }
 
         while(single_push) {
             const uint8_t index = Bits::pop(single_push);
-            movelist.push_back(Move::create<MoveType::NORMAL>(index + DOWN, index));
+            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN, index));
         }
 
         while(double_push) {
             const uint8_t index = Bits::pop(double_push);
-            movelist.push_back(Move::create<MoveType::NORMAL>(index + DOWN + DOWN, index));
+            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN + DOWN, index));
         }
 
-        // TODO: en passant
+        const Square* en_passant = board.getEnPassantSquare();
+        const uint8_t en_passant_index = en_passant->getIndex();
+
+        if(en_passant->getValue() != Square::NONE) {
+            const uint8_t ep_pawn_capture = en_passant_index + DOWN;
+
+            // If the en passant square is not on the checkmask, en passant is not available
+            if((checkmask & en_passant_index) == 0ULL) return;
+
+            uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_lr;
+
+            // Up to 2 pawns can take en passant
+            while(ep_pawns_bb) {
+                const uint8_t from = Bits::pop(ep_pawns_bb);
+
+                // TODO: Check whether king is in check after en passant is played
+
+                moves.push_back(Move::create<MoveType::EN_PASSANT>(from, en_passant_index));
+            }
+        }
     }
 
     static uint64_t generateKnightMoves(const uint8_t &index) {

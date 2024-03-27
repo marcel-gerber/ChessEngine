@@ -158,7 +158,13 @@ public:
 
             removePiece(moved, from);
             placePiece(promotion_piece, to);
-        } else if(type == MoveType::EN_PASSANT) {
+        } else {
+            // Place the moved piece at the new position
+            removePiece(moved, from);
+            placePiece(moved, to);
+        }
+
+        if(type == MoveType::EN_PASSANT) {
             const uint8_t ep_square_index = Square::getEnPassantSquare(to);
             const Piece pawn = Piece(PieceType::PAWN, side_to_move.getOppositeColor());
 
@@ -261,6 +267,27 @@ public:
         }
 
         std::cout << ss.str();
+    }
+
+    [[nodiscard]] std::string toString() const {
+        std::stringstream ss;
+        uint8_t index = 56;
+        Piece piece{};
+
+        ss << "---------------------------------\n";
+
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                piece = getPiece(index);
+                ss << "| " << piece.getCharacter() << " ";
+
+                index++;
+            }
+            ss << "|\n";
+            ss << "---------------------------------\n";
+            index -= 16;
+        }
+        return ss.str();
     }
 
     [[nodiscard]] Castling* getCastlingRights() {

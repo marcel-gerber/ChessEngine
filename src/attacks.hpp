@@ -160,7 +160,7 @@ public:
         return color == Color::WHITE ? (bb_pawns << 7 & ~File::FILE_HBB) : (bb_pawns >> 7 & ~File::FILE_ABB);
     }
 
-    static uint64_t getPawnAttacks(Color &color, const uint8_t &index) {
+    static uint64_t getPawnAttacks(const Color &color, const uint8_t &index) {
         return Constants::PawnAttacks[color.getValue()][index];
     }
 
