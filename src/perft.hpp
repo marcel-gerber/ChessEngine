@@ -7,12 +7,15 @@
 
 #include <cstdint>
 #include <vector>
+#include <chrono>
+#include <iomanip>
+
 #include "board.hpp"
 #include "movegen.hpp"
 
 class Perft {
 private:
-    Board board;
+    Board &board;
 
     uint64_t perft(int depth) {
         std::vector<Move> moves;
@@ -31,6 +34,26 @@ private:
         }
 
         return nodes;
+    }
+
+public:
+    explicit Perft(Board &board) : board(board) {
+
+    }
+
+    void run(int depth) {
+        const auto t1 = std::chrono::high_resolution_clock::now();
+        const auto nodes = perft(depth);
+        const auto t2 = std::chrono::high_resolution_clock::now();
+        const auto ms = duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+        std::stringstream stringstream;
+        stringstream << "depth " << std::left << std::setw(2) << depth
+           << " time " << std::setw(5) << ms
+           << " nodes " << std::setw(12) << nodes
+           << " nps " << std::setw(9) << (nodes * 1000) / (ms + 1);
+
+        std::cout << stringstream.str() << std::endl;
     }
 };
 

@@ -173,12 +173,72 @@ public:
         const StateInfo prev = prev_state_infos.top();
         prev_state_infos.pop();
 
-        Castling castling = prev.castling_rights;
-        Square en_passant = prev.en_passant;
-        uint8_t half_move = prev.half_move_clock;
+        castling_rights = prev.castling_rights;
+        en_passant_square = prev.en_passant;
+        half_move_clock = prev.half_move_clock;
+        side_to_move = side_to_move.getOppositeColor();
         Piece captured = prev.captured;
 
-        // TODO
+        const uint8_t from = move.from_index();
+        const uint8_t to = move.to_index();
+        const uint16_t type = move.type();
+
+        if(type == MoveType::CASTLING) {
+            const Castling::Value castling = Castling::getFromKingIndex(to);
+
+            // Positions for the rook
+            const uint8_t rook_from_index = Castling::getEndingRookIndex(castling);
+            const uint8_t rook_to_index = Castling::getStartingRookIndex(castling);
+
+            const Piece rook = getPiece(rook_from_index);
+            const Piece king = getPiece(to);
+
+            // Remove king and rook
+            removePiece(rook, rook_from_index);
+            removePiece(king, to);
+
+            // Place king and rook at previous positions
+            placePiece(rook, rook_to_index);
+            placePiece(king, from);
+
+            return;
+        }
+
+        if(type == MoveType::PROMOTION) {
+            const Piece pawn = Piece(PieceType::PAWN, side_to_move);
+            const Piece promoted = getPiece(to);
+
+            // Remove promoted piece
+            removePiece(promoted, to);
+
+            // Place pawn at previous position
+            placePiece(pawn, from);
+
+            if(captured != Piece::NONE) {
+                placePiece(captured, to);
+            }
+
+            return;
+        }
+
+        const Piece moved = getPiece(to);
+
+        // Place moved piece at previous position
+        removePiece(moved, to);
+        placePiece(moved, from);
+
+        if(type == MoveType::EN_PASSANT) {
+            const Piece pawn = Piece(PieceType::PAWN, side_to_move.getOppositeColor());
+            const uint8_t pawn_to_index = en_passant_square.getIndex() ^ 8;
+
+            placePiece(pawn, pawn_to_index);
+
+            return;
+        }
+
+        if(captured != Piece::NONE) {
+            placePiece(captured, to);
+        }
     }
 
     void print() const {
