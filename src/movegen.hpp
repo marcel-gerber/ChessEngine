@@ -294,21 +294,37 @@ public:
         }
 
         const Square* en_passant = board.getEnPassantSquare();
-        const uint8_t en_passant_index = en_passant->getIndex();
 
         if(en_passant->getValue() != Square::NONE) {
+            const uint8_t en_passant_index = en_passant->getIndex();
+
             const uint8_t ep_pawn_capture = en_passant_index + DOWN;
 
             // If the en passant square is not on the checkmask, en passant is not available
             if((checkmask & en_passant_index) == 0ULL) return;
 
+            // possible en passant pawns
             uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_lr;
+
+            // we need to know where our king and opponent rooks are to check
+            // whether our king is in check after en passant
+            const uint8_t king_index = board.getKingIndex(color);
+            const uint64_t opp_rooks = board.getPieces(color.getOppositeColor(), PieceType::ROOK)
+                    | board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
+
+            // occupancy mask without the possible en passant capture pawn
+            uint64_t ep_mask = board.getOccupancy() & ~Square::toBitboard(ep_pawn_capture);
 
             // Up to 2 pawns can take en passant
             while(ep_pawns_bb) {
                 const uint8_t from = Bits::pop(ep_pawns_bb);
 
-                // TODO: Check whether king is in check after en passant is played
+                // 'removing' the possible en passant pawn from 'ep_mask'
+                const uint64_t mask = ep_mask & ~Square::toBitboard(from);
+
+                const uint64_t rook_attacks = Attacks::getRookAttacks(king_index, mask);
+
+                if((rook_attacks & opp_rooks) != 0ULL) continue;
 
                 moves.push_back(Move::create<MoveType::EN_PASSANT>(from, en_passant_index));
             }

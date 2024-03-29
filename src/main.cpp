@@ -31,6 +31,8 @@ int main() {
 
     // Fen::setFen(board, "r1bqk1nr/p1pp1ppp/1p1np3/6b1/1Q6/5N2/PPP4P/R3K2R w KQkq - 0 1");
 
+//    Fen::setFen(board, "k7/8/8/3pP1K1/8/8/8/8 w - d6 0 1");
+
     Perft perft(board);
     perft.run(5);
 
