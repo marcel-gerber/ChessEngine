@@ -105,7 +105,9 @@ public:
     }
 
     static uint64_t attackedSquares(const Board &board, Color color) {
-        const uint64_t occupied = board.getOccupancy();
+        const uint8_t opp_king = board.getKingIndex(color.getOppositeColor());
+
+        const uint64_t occupied = board.getOccupancy() & ~Square::toBitboard(opp_king);
         const uint64_t queens = board.getPieces(color, PieceType::QUEEN);
 
         uint64_t pawns = board.getPieces(color, PieceType::PAWN);
