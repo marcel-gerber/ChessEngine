@@ -158,7 +158,8 @@ public:
         uint64_t check_mask = knight_attacks;
 
         // pawn checks
-        uint64_t pawn_attacks = Attacks::getPawnAttacks(opp_color, king_index) & opp_pawns;
+        // Important note: using color and not opponent color here!
+        uint64_t pawn_attacks = Attacks::getPawnAttacks(color, king_index) & opp_pawns;
         double_check += bool(pawn_attacks);
         check_mask |= pawn_attacks;
 
