@@ -11,7 +11,7 @@ int main() {
 
     Board board = Board();
 
-    Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 //    std::cout << +board.getHalfMoveClock() << std::endl;
 //    std::cout << +board.getSideToMove() << std::endl;
 //    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
@@ -23,18 +23,16 @@ int main() {
 //    uint64_t attacked = MoveGen::attackedSquares(board, Color::WHITE);
 //    Bits::print(attacked);
 
-    /*Fen::setFen(board, "rnbk1b1r/pp3ppp/2p5/4q1B1/4n3/8/PPP2PPP/2KR1BNR b - - 1 10");
-    board.print();
-    auto [mask, double_check] = MoveGen::checkMask(board, Color::BLACK);
-    Bits::print(mask);
-    std::cout << +double_check << std::endl;*/
+//    auto [mask, double_check] = MoveGen::checkMask(board, Color::WHITE);
+//    Bits::print(mask);
+//    std::cout << +double_check << std::endl;
 
     // Fen::setFen(board, "r1bqk1nr/p1pp1ppp/1p1np3/6b1/1Q6/5N2/PPP4P/R3K2R w KQkq - 0 1");
 
 //    Fen::setFen(board, "k7/8/8/3pP1K1/8/8/8/8 w - d6 0 1");
 
     Perft perft(board);
-    perft.run(5);
+    perft.run(4);
 
 //     board.print();
 
