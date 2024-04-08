@@ -19,7 +19,7 @@ private:
     Board &board;
     std::ofstream file;
 
-    uint64_t perft(int depth) {
+    uint64_t perft(int depth) const {
         std::vector<Move> moves;
         MoveGen::legalMoves(board, board.getSideToMove(), moves);
 
@@ -64,6 +64,10 @@ public:
 
         std::cout << stringstream.str() << std::endl;
         file.close();
+    }
+
+    uint64_t nodes(int depth) const {
+        return perft(depth);
     }
 };
 

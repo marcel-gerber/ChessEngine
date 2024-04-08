@@ -27,7 +27,7 @@ private:
     }
 
 public:
-    static void setFen(Board &board, const std::string &&fen) {
+    static void setFen(Board &board, const std::string &fen) {
         const auto split = splitString(fen);
         assert(!split.empty());
 
