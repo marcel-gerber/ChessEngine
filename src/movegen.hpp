@@ -309,11 +309,12 @@ public:
             // possible en passant pawns
             uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_lr;
 
-            // we need to know where our king and opponent rooks are to check
+            // we need to know where our king and opponent sliders are to check
             // whether our king is in check after en passant
             const uint8_t king_index = board.getKingIndex(color);
-            const uint64_t opp_rooks = board.getPieces(color.getOppositeColor(), PieceType::ROOK)
-                    | board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
+            const uint64_t opp_queens = board.getPieces(color.getOppositeColor(), PieceType::QUEEN);
+            const uint64_t opp_rooks = board.getPieces(color.getOppositeColor(), PieceType::ROOK) | opp_queens;
+            const uint64_t opp_bishops = board.getPieces(color.getOppositeColor(), PieceType::BISHOP) | opp_queens;
 
             // occupancy mask without the possible en passant capture pawn
             uint64_t ep_mask = board.getOccupancy() & ~Square::toBitboard(ep_pawn_capture);
@@ -323,11 +324,13 @@ public:
                 const uint8_t from = Bits::pop(ep_pawns_bb);
 
                 // 'removing' the possible en passant pawn from 'ep_mask'
-                const uint64_t mask = ep_mask & ~Square::toBitboard(from);
+                uint64_t mask = ep_mask & ~Square::toBitboard(from);
+                mask |= Square::toBitboard(en_passant_index);
 
                 const uint64_t rook_attacks = Attacks::getRookAttacks(king_index, mask);
+                const uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, mask);
 
-                if((rook_attacks & opp_rooks) != 0ULL) continue;
+                if(((rook_attacks & opp_rooks) | (bishop_attacks & opp_bishops)) != 0ULL) continue;
 
                 moves.push_back(Move::create<MoveType::EN_PASSANT>(from, en_passant_index));
             }
