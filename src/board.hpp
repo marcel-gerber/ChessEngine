@@ -107,7 +107,7 @@ public:
 
             // Remove castling right if rook has been captured
             if(captured.getType().getValue() == PieceType::ROOK) {
-                const Castling::Value castling = Castling::getFromRookIndex(from);
+                const Castling::Value castling = Castling::getFromRookIndex(to);
                 this->castling_rights.unset(castling);
             }
         }
