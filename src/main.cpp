@@ -30,13 +30,10 @@ int main() {
 //    Bits::print(mask);
 //    std::cout << +double_check << std::endl;
 
-//     Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
-
-    // TODO: this FEN delivers an incorrect number of nodes at depth 3
-    Fen::setFen(board, "n2rnr2/p1ppqp1k/b3p1pb/3PN1B1/Pp2P3/2N2B2/1PP2PPP/R3K2R w KQ - 3 7");
+     Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
     Perft perft(board);
-    perft.run(3);
+    perft.run(4);
 
 //     board.print();
 
