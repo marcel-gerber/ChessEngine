@@ -30,10 +30,12 @@ int main() {
 //    Bits::print(mask);
 //    std::cout << +double_check << std::endl;
 
-     Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+    // TODO: This FEN generates a wrong number of nodes at depth 5
+    // There still seems to be a bug with en Passant as the number of en Passant moves is wrong
+    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 
     Perft perft(board);
-    perft.run(4);
+    perft.run(5);
 
 //     board.print();
 
