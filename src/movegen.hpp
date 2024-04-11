@@ -303,8 +303,9 @@ public:
 
             const uint8_t ep_pawn_capture = en_passant_index + DOWN;
 
-            // If the en passant square is not on the checkmask, en passant is not available
-            if((checkmask & en_passant_index) == 0ULL) return;
+            // If the en passant square and the enemy pawn that double pushed
+            // is not on the checkmask, en passant is not available
+            if((checkmask & (Square::toBitboard(en_passant_index) | Square::toBitboard(ep_pawn_capture))) == 0ULL) return;
 
             // possible en passant pawns
             uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_lr;
