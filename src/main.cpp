@@ -6,6 +6,19 @@
 #include "perft.hpp"
 #include "debug.hpp"
 
+void testPawnMoveGen(const Board &board, const Color &color) {
+    std::vector<Move> moves = { };
+    auto [checkmask, double_check] = MoveGen::checkMask(board, color);
+    const uint64_t pin_hv = MoveGen::pinMaskHV(board, color);
+    const uint64_t pin_d = MoveGen::pinMaskDiagonal(board, color);
+
+    MoveGen::generatePawnMoves(board, color, moves, pin_hv, pin_d, checkmask);
+
+    for(const auto &move : moves) {
+        std::cout << Square::toString(move.from_index()) << Square::toString(move.to_index()) << std::endl;
+    }
+}
+
 int main() {
     Attacks::initMagics();
     MoveGen::initSquaresBetween();
@@ -14,7 +27,7 @@ int main() {
 
     Board board = Board();
 
-//    Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+    Fen::setFen(board, "7k/8/8/8/r5K1/3P4/8/8 w - - 0 1");
 //    std::cout << +board.getHalfMoveClock() << std::endl;
 //    std::cout << +board.getSideToMove() << std::endl;
 //    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
@@ -26,25 +39,13 @@ int main() {
 //    uint64_t attacked = MoveGen::attackedSquares(board, Color::WHITE);
 //    Bits::print(attacked);
 
-//    auto [mask, double_check] = MoveGen::checkMask(board, Color::WHITE);
-//    Bits::print(mask);
-//    std::cout << +double_check << std::endl;
+//    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 
-    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+//    Perft perft(board);
+//    perft.run(6);
 
-    Perft perft(board);
-    perft.run(6);
-
-//     board.print();
-
-//    std::vector<Move> moves = { };
-//
-//    MoveGen::legalMoves(board, Color::BLACK, moves);
-//    std::cout << moves.size() << std::endl;
-//
-//    for(const auto &move : moves) {
-//        std::cout << Square::toString(move.from_index()) << Square::toString(move.to_index()) << std::endl;
-//    }
+     board.print();
+     testPawnMoveGen(board, Color::WHITE);
 
 //    Move move = moves[0];
 //    board.makeMove(move);
