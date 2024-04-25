@@ -192,6 +192,15 @@ public:
         return {check_mask, double_check};
     }
 
+    static void generatePromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
+        const uint8_t from_index = target_index + direction;
+
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::KNIGHT));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::BISHOP));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::ROOK));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::QUEEN));
+    }
+
     static void generatePawnMoves(const Board &board, const Color &color, std::vector<Move> &moves, const uint64_t &pin_hv,
                                   const uint64_t &pin_d, const uint64_t &checkmask) {
         const int8_t UP = color == Color::WHITE ? 8 : -8;
@@ -210,17 +219,42 @@ public:
         // TODO: expand this idea
         const uint64_t pawns_pinned_hv = pawns & pin_hv;
         const uint64_t pawns_not_pinned_hv = pawns & ~pin_hv;
+        const uint64_t pawns_not_pinned = pawns & ~pin_hv & ~pin_d;
 
         // these pawns can walk forward
-        uint64_t single_push = shift(pawns, UP) & bb_empty & ~RANK_PROMO & checkmask;
+        uint64_t single_push_unpinned = shift(pawns_not_pinned, UP) & bb_empty & checkmask;
 
-        while(single_push) {
-            const uint8_t target_index = Bits::pop(single_push);
-            if((Square::toBitboard(target_index) & pin_hv) == 0ULL) continue;
+        // these need special check as horizontally pinned pawns cannot move at all
+        // but vertically pinned pawns can walk forward
+        uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & bb_empty & checkmask;
+
+        while(single_push_unpinned) {
+            const uint8_t target_index = Bits::pop(single_push_unpinned);
+
+            if(Bits::popcount(Square::toBitboard(target_index) & RANK_PROMO)) {
+                generatePromotionMoves(moves, target_index, DOWN);
+                continue;
+            }
 
             moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
         }
 
+        while(single_push_pinned) {
+            const uint8_t target_index = Bits::pop(single_push_pinned);
+            if(Bits::popcount(Square::toBitboard(target_index) & pin_hv)) continue;
+
+            if(Bits::popcount(Square::toBitboard(target_index) & RANK_PROMO)) {
+                generatePromotionMoves(moves, target_index, DOWN);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
+        }
+
+        const uint64_t pawns_left_attack = Attacks::getPawnLeftAttacks(pawns_not_pinned_hv, color) & bb_opp & checkmask;
+        const uint64_t pawns_right_attack = Attacks::getPawnRightAttacks(pawns_not_pinned_hv, color) & bb_opp & checkmask;
+
+        // En Passant
         const Square* en_passant = board.getEnPassantSquare();
 
         if(en_passant->getValue() != Square::NONE) {
