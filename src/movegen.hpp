@@ -192,7 +192,7 @@ public:
         return {check_mask, double_check};
     }
 
-    static void generatePromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
+    static void getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
         const uint8_t from_index = target_index + direction;
 
         moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::KNIGHT));
@@ -232,7 +232,7 @@ public:
             const uint8_t target_index = Bits::pop(single_push_unpinned);
 
             if(Bits::popcount(Square::toBitboard(target_index) & RANK_PROMO)) {
-                generatePromotionMoves(moves, target_index, DOWN);
+                getPromotionMoves(moves, target_index, DOWN);
                 continue;
             }
 
@@ -242,11 +242,6 @@ public:
         while(single_push_pinned) {
             const uint8_t target_index = Bits::pop(single_push_pinned);
             if(Bits::popcount(Square::toBitboard(target_index) & pin_hv)) continue;
-
-            if(Bits::popcount(Square::toBitboard(target_index) & RANK_PROMO)) {
-                generatePromotionMoves(moves, target_index, DOWN);
-                continue;
-            }
 
             moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
         }
