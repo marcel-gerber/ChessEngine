@@ -27,7 +27,7 @@ int main() {
 
     Board board = Board();
 
-    Fen::setFen(board, "7k/1P6/8/6b1/8/4P3/8/2K5 w - - 0 1");
+    Fen::setFen(board, "1b1n3k/2P5/8/8/5K2/3P4/8/8 w - - 0 1");
 //    std::cout << +board.getHalfMoveClock() << std::endl;
 //    std::cout << +board.getSideToMove() << std::endl;
 //    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;

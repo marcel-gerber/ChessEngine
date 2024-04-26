@@ -208,7 +208,6 @@ public:
         const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
         const int8_t DOWN_RIGHT = color == Color::WHITE ? -7 : 7;
 
-        const uint64_t RANK_BEFORE_PROMO = Rank::getRankBeforePromo(color);
         const uint64_t RANK_PROMO = Rank::getPromoRank(color);
         const uint64_t DOUBLE_PUSH_RANK = Rank::getDoublePushRank(color);
 
@@ -218,7 +217,7 @@ public:
 
         // TODO: expand this idea
         const uint64_t pawns_pinned_hv = pawns & pin_hv;
-        const uint64_t pawns_not_pinned_hv = pawns & ~pin_hv;
+        const uint64_t pawns_pinned_d = pawns & pin_d;
         const uint64_t pawns_not_pinned = pawns & ~pin_hv & ~pin_d;
 
         // these pawns can walk forward
@@ -231,7 +230,7 @@ public:
         while(single_push_unpinned) {
             const uint8_t target_index = Bits::pop(single_push_unpinned);
 
-            if(Bits::popcount(Square::toBitboard(target_index) & RANK_PROMO)) {
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
                 getPromotionMoves(moves, target_index, DOWN);
                 continue;
             }
@@ -241,13 +240,68 @@ public:
 
         while(single_push_pinned) {
             const uint8_t target_index = Bits::pop(single_push_pinned);
-            if(Bits::popcount(Square::toBitboard(target_index) & pin_hv)) continue;
+            if(!(Square::toBitboard(target_index) & pin_hv)) continue;
 
             moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
         }
 
-        const uint64_t pawns_left_attack = Attacks::getPawnLeftAttacks(pawns_not_pinned_hv, color) & bb_opp & checkmask;
-        const uint64_t pawns_right_attack = Attacks::getPawnRightAttacks(pawns_not_pinned_hv, color) & bb_opp & checkmask;
+        // these pawns can take left and right as they are not pinned
+        uint64_t pawns_left_unpinned = Attacks::getPawnLeftAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
+        uint64_t pawns_right_unpinned = Attacks::getPawnRightAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
+
+        while(pawns_left_unpinned) {
+            const uint8_t target_index = Bits::pop(pawns_left_unpinned);
+
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_RIGHT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
+        }
+
+        while(pawns_right_unpinned) {
+            const uint8_t target_index = Bits::pop(pawns_right_unpinned);
+
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_LEFT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_LEFT, target_index));
+        }
+
+        // these pawns need special check as they are diagonally pinned
+        uint64_t pawns_left_pinned = Attacks::getPawnLeftAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+        uint64_t pawns_right_pinned = Attacks::getPawnRightAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+
+        while(pawns_left_pinned) {
+            const uint8_t target_index = Bits::pop(pawns_left_pinned);
+            const uint64_t target_sq_bb = Square::toBitboard(target_index);
+
+            if(!(target_sq_bb & pin_d)) continue;
+
+            if(target_sq_bb & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_RIGHT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
+        }
+
+        while(pawns_right_pinned) {
+            const uint8_t target_index = Bits::pop(pawns_right_pinned);
+            const uint64_t target_sq_bb = Square::toBitboard(target_index);
+
+            if(!(target_sq_bb & pin_d)) continue;
+
+            if(target_sq_bb & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_LEFT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_LEFT, target_index));
+        }
 
         // En Passant
         const Square* en_passant = board.getEnPassantSquare();

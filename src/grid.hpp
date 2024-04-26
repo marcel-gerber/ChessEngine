@@ -125,6 +125,19 @@ public:
         }
     }
 
+    template<Color::Value color>
+    static constexpr uint64_t getDoublePushRank() {
+        switch(color) {
+            case Color::WHITE:
+                return RANK_3BB;
+            case Color::BLACK:
+                return RANK_6BB;
+            default:
+                return 0ULL;
+        }
+    }
+
+
     static constexpr uint64_t RANK_1BB = 0xFF;
     static constexpr uint64_t RANK_2BB = RANK_1BB << (8 * 1);
     static constexpr uint64_t RANK_3BB = RANK_1BB << (8 * 2);
