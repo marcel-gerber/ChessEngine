@@ -215,17 +215,24 @@ public:
         const uint64_t bb_opp = board.getSide(color.getOppositeColor());
         const uint64_t pawns = board.getPieces(color, PieceType::PAWN);
 
-        // TODO: expand this idea
         const uint64_t pawns_pinned_hv = pawns & pin_hv;
         const uint64_t pawns_pinned_d = pawns & pin_d;
         const uint64_t pawns_not_pinned = pawns & ~pin_hv & ~pin_d;
+        const uint64_t pawns_not_pinned_hv = pawns & ~pin_hv;
 
         // these pawns can walk forward
-        uint64_t single_push_unpinned = shift(pawns_not_pinned, UP) & bb_empty & checkmask;
+        uint64_t single_push_unpinned = shift(pawns_not_pinned, UP) & bb_empty;
 
         // these need special check as horizontally pinned pawns cannot move at all
         // but vertically pinned pawns can walk forward
-        uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & bb_empty & checkmask;
+        uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & bb_empty;
+
+        // these pawns can (maybe) do a double push
+        uint64_t double_push_unpinned = single_push_unpinned & DOUBLE_PUSH_RANK;
+        uint64_t double_push_pinned = single_push_pinned & DOUBLE_PUSH_RANK;
+
+        single_push_unpinned &= checkmask;
+        single_push_pinned &= checkmask;
 
         while(single_push_unpinned) {
             const uint8_t target_index = Bits::pop(single_push_unpinned);
@@ -243,6 +250,24 @@ public:
             if(!(Square::toBitboard(target_index) & pin_hv)) continue;
 
             moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
+        }
+
+        // if there are no pawns that can double push -> skip this part
+        if((double_push_unpinned | double_push_pinned)) {
+            double_push_unpinned = shift(double_push_unpinned, UP) & bb_empty & checkmask;
+            double_push_pinned = shift(double_push_pinned, UP) & bb_empty & checkmask;
+
+            while(double_push_unpinned) {
+                const uint8_t target_index = Bits::pop(double_push_unpinned);
+                moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN + DOWN, target_index));
+            }
+
+            while(double_push_pinned) {
+                const uint8_t target_index = Bits::pop(double_push_pinned);
+                if(!(Square::toBitboard(target_index) & pin_hv)) continue;
+
+                moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN + DOWN, target_index));
+            }
         }
 
         // these pawns can take left and right as they are not pinned
@@ -316,8 +341,7 @@ public:
             if((checkmask & (Square::toBitboard(en_passant_index) | Square::toBitboard(ep_pawn_capture))) == 0ULL) return;
 
             // possible en passant pawns
-            // TODO: 'pawns' has to be replaced
-            uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns;
+            uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_not_pinned_hv;
 
             // we need to know where our king and opponent sliders are to check
             // whether our king is in check after en passant

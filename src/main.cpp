@@ -27,7 +27,7 @@ int main() {
 
     Board board = Board();
 
-    Fen::setFen(board, "1b1n3k/2P5/8/8/5K2/3P4/8/8 w - - 0 1");
+    Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 //    std::cout << +board.getHalfMoveClock() << std::endl;
 //    std::cout << +board.getSideToMove() << std::endl;
 //    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
@@ -41,11 +41,8 @@ int main() {
 
 //    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 
-//    Perft perft(board);
-//    perft.run(6);
-
-     board.print();
-     testPawnMoveGen(board, Color::WHITE);
+    Perft perft(board);
+    perft.run(6);
 
 //    Move move = moves[0];
 //    board.makeMove(move);
