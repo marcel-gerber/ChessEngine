@@ -4,7 +4,6 @@
 #include "attacks.hpp"
 #include "movegen.hpp"
 #include "perft.hpp"
-#include "debug.hpp"
 
 int main() {
     Attacks::initMagics();
@@ -14,7 +13,7 @@ int main() {
 
     Board board = Board();
 
-//    Fen::setFen(board, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+    Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 //    std::cout << +board.getHalfMoveClock() << std::endl;
 //    std::cout << +board.getSideToMove() << std::endl;
 //    std::cout << +board.getCastlingRights()->getCastlingRights() << std::endl;
@@ -26,25 +25,10 @@ int main() {
 //    uint64_t attacked = MoveGen::attackedSquares(board, Color::WHITE);
 //    Bits::print(attacked);
 
-//    auto [mask, double_check] = MoveGen::checkMask(board, Color::WHITE);
-//    Bits::print(mask);
-//    std::cout << +double_check << std::endl;
-
-    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+//    Fen::setFen(board, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
 
     Perft perft(board);
     perft.run(6);
-
-//     board.print();
-
-//    std::vector<Move> moves = { };
-//
-//    MoveGen::legalMoves(board, Color::BLACK, moves);
-//    std::cout << moves.size() << std::endl;
-//
-//    for(const auto &move : moves) {
-//        std::cout << Square::toString(move.from_index()) << Square::toString(move.to_index()) << std::endl;
-//    }
 
 //    Move move = moves[0];
 //    board.makeMove(move);

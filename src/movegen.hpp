@@ -192,110 +192,143 @@ public:
         return {check_mask, double_check};
     }
 
-    static void generatePawnMoves(const Board &board, Color color, std::vector<Move> &moves, const uint64_t &pin_hv,
-                                  const uint64_t &pin_d, const uint64_t &checkmask) {
-        const uint64_t bb_opp = board.getSide(color.getOppositeColor());
+    static void getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
+        const uint8_t from_index = target_index + direction;
 
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::KNIGHT));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::BISHOP));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::ROOK));
+        moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::QUEEN));
+    }
+
+    static void generatePawnMoves(const Board &board, const Color &color, std::vector<Move> &moves, const uint64_t &pin_hv,
+                                  const uint64_t &pin_d, const uint64_t &checkmask) {
         const int8_t UP = color == Color::WHITE ? 8 : -8;
         const int8_t DOWN = color == Color::WHITE ? -8 : 8;
         const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
         const int8_t DOWN_RIGHT = color == Color::WHITE ? -7 : 7;
 
-        const uint64_t RANK_BEFORE_PROMO = Rank::getRankBeforePromo(color);
         const uint64_t RANK_PROMO = Rank::getPromoRank(color);
         const uint64_t DOUBLE_PUSH_RANK = Rank::getDoublePushRank(color);
 
+        const uint64_t bb_empty = ~board.getOccupancy();
+        const uint64_t bb_opp = board.getSide(color.getOppositeColor());
         const uint64_t pawns = board.getPieces(color, PieceType::PAWN);
 
-        // These pawns can maybe take left or right
-        const uint64_t pawns_lr = pawns & ~pin_hv;
-        const uint64_t unpinnedpawns_lr = pawns_lr & ~pin_d;
-        const uint64_t pinnedpawns_lr = pawns_lr & pin_d;
+        const uint64_t pawns_pinned_hv = pawns & pin_hv;
+        const uint64_t pawns_pinned_d = pawns & pin_d;
+        const uint64_t pawns_not_pinned = pawns & ~pin_hv & ~pin_d;
+        const uint64_t pawns_not_pinned_hv = pawns & ~pin_hv;
 
-        uint64_t l_pawns = Attacks::getPawnLeftAttacks(unpinnedpawns_lr, color)
-                | (Attacks::getPawnLeftAttacks(pinnedpawns_lr, color) & pin_d);
+        // these pawns can walk forward
+        uint64_t single_push_unpinned = shift(pawns_not_pinned, UP) & bb_empty;
 
-        uint64_t r_pawns = Attacks::getPawnRightAttacks(unpinnedpawns_lr, color)
-                | (Attacks::getPawnRightAttacks(pinnedpawns_lr, color) & pin_d);
+        // these need special check as horizontally pinned pawns cannot move at all
+        // but vertically pinned pawns can walk forward
+        uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & bb_empty;
 
-        // Prune moves that don't capture a piece and are not on the checkmask
-        l_pawns &= bb_opp & checkmask;
-        r_pawns &= bb_opp & checkmask;
+        // these pawns can (maybe) do a double push
+        uint64_t double_push_unpinned = single_push_unpinned & DOUBLE_PUSH_RANK;
+        uint64_t double_push_pinned = single_push_pinned & DOUBLE_PUSH_RANK;
 
-        // These pawns can walk forward
-        const uint64_t pawns_hv = pawns & ~pin_d;
+        single_push_unpinned &= checkmask;
+        single_push_pinned &= checkmask;
 
-        const uint64_t pawns_pinned_hv = pawns_hv & pin_hv;
-        const uint64_t pawns_unpinned_hv = pawns_hv & ~pin_hv;
+        while(single_push_unpinned) {
+            const uint8_t target_index = Bits::pop(single_push_unpinned);
 
-        const uint64_t single_push_unpinned = shift(pawns_unpinned_hv, UP) & ~board.getOccupancy();
-        const uint64_t single_push_pinned = shift(pawns_pinned_hv, UP) & pin_hv & ~board.getOccupancy();
-
-        // Prune moves that are not on the checkmask
-        uint64_t single_push = (single_push_unpinned | single_push_pinned) & checkmask;
-
-        uint64_t double_push = ((shift(single_push_unpinned & DOUBLE_PUSH_RANK, UP) & ~board.getOccupancy()) |
-                (shift(single_push_pinned & DOUBLE_PUSH_RANK, UP) & ~board.getOccupancy())) & checkmask;
-
-        // Pawn promotions
-        if(pawns & RANK_BEFORE_PROMO) {
-            uint64_t promo_left = l_pawns & RANK_PROMO;
-            uint64_t promo_right = r_pawns & RANK_PROMO;
-            uint64_t promo_push = single_push & RANK_PROMO;
-
-            // Pawn promotions when capture a piece to the left
-            while(promo_left) {
-                const uint8_t index = Bits::pop(promo_left);
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::KNIGHT));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::BISHOP));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::ROOK));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_RIGHT, index, PieceType::QUEEN));
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN);
+                continue;
             }
 
-            // Pawn promotions when capture a piece to the right
-            while(promo_right) {
-                const uint8_t index = Bits::pop(promo_right);
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::KNIGHT));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::BISHOP));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::ROOK));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN_LEFT, index, PieceType::QUEEN));
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
+        }
+
+        while(single_push_pinned) {
+            const uint8_t target_index = Bits::pop(single_push_pinned);
+            if(!(Square::toBitboard(target_index) & pin_hv)) continue;
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
+        }
+
+        // if there are no pawns that can double push -> skip this part
+        if((double_push_unpinned | double_push_pinned)) {
+            double_push_unpinned = shift(double_push_unpinned, UP) & bb_empty & checkmask;
+            double_push_pinned = shift(double_push_pinned, UP) & bb_empty & checkmask;
+
+            while(double_push_unpinned) {
+                const uint8_t target_index = Bits::pop(double_push_unpinned);
+                moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN + DOWN, target_index));
             }
 
-            // Pawn promotions when pushing to the promotion Rank
-            while(promo_push) {
-                const uint8_t index = Bits::pop(promo_push);
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::KNIGHT));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::BISHOP));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::ROOK));
-                moves.push_back(Move::create<MoveType::PROMOTION>(index + DOWN, index, PieceType::QUEEN));
+            while(double_push_pinned) {
+                const uint8_t target_index = Bits::pop(double_push_pinned);
+                if(!(Square::toBitboard(target_index) & pin_hv)) continue;
+
+                moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN + DOWN, target_index));
             }
         }
 
-        // Single pushes and piece captures (no promotion)
-        single_push &= ~RANK_PROMO;
-        l_pawns &= ~RANK_PROMO;
-        r_pawns &= ~RANK_PROMO;
+        // these pawns can take left and right as they are not pinned
+        uint64_t pawns_left_unpinned = Attacks::getPawnLeftAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
+        uint64_t pawns_right_unpinned = Attacks::getPawnRightAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
 
-        while(l_pawns) {
-            const uint8_t index = Bits::pop(l_pawns);
-            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN_RIGHT, index));
+        while(pawns_left_unpinned) {
+            const uint8_t target_index = Bits::pop(pawns_left_unpinned);
+
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_RIGHT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
         }
 
-        while(r_pawns) {
-            const uint8_t index = Bits::pop(r_pawns);
-            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN_LEFT, index));
+        while(pawns_right_unpinned) {
+            const uint8_t target_index = Bits::pop(pawns_right_unpinned);
+
+            if(Square::toBitboard(target_index) & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_LEFT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_LEFT, target_index));
         }
 
-        while(single_push) {
-            const uint8_t index = Bits::pop(single_push);
-            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN, index));
+        // these pawns need special check as they are diagonally pinned
+        uint64_t pawns_left_pinned = Attacks::getPawnLeftAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+        uint64_t pawns_right_pinned = Attacks::getPawnRightAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+
+        while(pawns_left_pinned) {
+            const uint8_t target_index = Bits::pop(pawns_left_pinned);
+            const uint64_t target_sq_bb = Square::toBitboard(target_index);
+
+            if(!(target_sq_bb & pin_d)) continue;
+
+            if(target_sq_bb & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_RIGHT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
         }
 
-        while(double_push) {
-            const uint8_t index = Bits::pop(double_push);
-            moves.push_back(Move::create<MoveType::NORMAL>(index + DOWN + DOWN, index));
+        while(pawns_right_pinned) {
+            const uint8_t target_index = Bits::pop(pawns_right_pinned);
+            const uint64_t target_sq_bb = Square::toBitboard(target_index);
+
+            if(!(target_sq_bb & pin_d)) continue;
+
+            if(target_sq_bb & RANK_PROMO) {
+                getPromotionMoves(moves, target_index, DOWN_LEFT);
+                continue;
+            }
+
+            moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_LEFT, target_index));
         }
 
+        // En Passant
         const Square* en_passant = board.getEnPassantSquare();
 
         if(en_passant->getValue() != Square::NONE) {
@@ -308,7 +341,7 @@ public:
             if((checkmask & (Square::toBitboard(en_passant_index) | Square::toBitboard(ep_pawn_capture))) == 0ULL) return;
 
             // possible en passant pawns
-            uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_lr;
+            uint64_t ep_pawns_bb = Attacks::getPawnAttacks(color.getOppositeColor(), en_passant_index) & pawns_not_pinned_hv;
 
             // we need to know where our king and opponent sliders are to check
             // whether our king is in check after en passant
@@ -370,11 +403,7 @@ public:
             return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
         }
 
-        uint64_t moves = 0ULL;
-        moves |= Attacks::getRookAttacks(index, bb_occupied);
-        moves |= Attacks::getBishopAttacks(index, bb_occupied);
-
-        return moves;
+        return Attacks::getQueenAttacks(index, bb_occupied);
     }
 
     static uint64_t generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked,
