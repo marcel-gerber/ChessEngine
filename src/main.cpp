@@ -4,20 +4,6 @@
 #include "attacks.hpp"
 #include "movegen.hpp"
 #include "perft.hpp"
-#include "debug.hpp"
-
-void testPawnMoveGen(const Board &board, const Color &color) {
-    std::vector<Move> moves = { };
-    auto [checkmask, double_check] = MoveGen::checkMask(board, color);
-    const uint64_t pin_hv = MoveGen::pinMaskHV(board, color);
-    const uint64_t pin_d = MoveGen::pinMaskDiagonal(board, color);
-
-    MoveGen::generatePawnMoves(board, color, moves, pin_hv, pin_d, checkmask);
-
-    for(const auto &move : moves) {
-        std::cout << Square::toString(move.from_index()) << Square::toString(move.to_index()) << std::endl;
-    }
-}
 
 int main() {
     Attacks::initMagics();
