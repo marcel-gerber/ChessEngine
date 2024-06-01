@@ -5,6 +5,7 @@
 #ifndef CHESSENGINE_CASTLING_RIGHTS_HPP
 #define CHESSENGINE_CASTLING_RIGHTS_HPP
 
+#include "color.hpp"
 #include <cstdint>
 #include <vector>
 
