@@ -5,6 +5,7 @@
 #ifndef CHESSENGINE_GRID_HPP
 #define CHESSENGINE_GRID_HPP
 
+#include "color.hpp"
 #include <cstdint>
 #include <cassert>
 #include <string>
