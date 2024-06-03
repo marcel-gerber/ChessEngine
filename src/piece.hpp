@@ -5,6 +5,7 @@
 #ifndef CHESSENGINE_PIECE_HPP
 #define CHESSENGINE_PIECE_HPP
 
+#include "color.hpp"
 #include <cstdint>
 
 class PieceType {
