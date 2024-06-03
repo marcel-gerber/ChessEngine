@@ -34,3 +34,87 @@ TEST(GridTest, GetDoublePushRank) {
     ASSERT_EQ(Rank::getDoublePushRank(Color::BLACK), Rank::RANK_6BB);
     ASSERT_EQ(Rank::getDoublePushRank(Color::NONE), 0ULL);
 }
+
+TEST(GridTest, SquareConstructor) {
+    Square square_none("-");
+    ASSERT_EQ(square_none.getValue(), Square::NONE);
+
+    Square square_a1("a1");
+    ASSERT_EQ(square_a1.getValue(), Square::Value::A1);
+
+    Square square_h8("h8");
+    ASSERT_EQ(square_h8.getValue(), Square::Value::H8);
+}
+
+TEST(GridTest, SquareOperatorLower) {
+    Square square_a1("a1");
+    Square square_none("-");
+
+    ASSERT_EQ(square_a1 < 1, true);
+    ASSERT_EQ(square_a1 < 0, false);
+
+    ASSERT_EQ(square_none < 0, false);
+    ASSERT_EQ(square_none < 64, false);
+    ASSERT_EQ(square_none < 65, true);
+}
+
+TEST(GridTest, SquareOperatorPlusPlus) {
+    Square square_a1("a1");
+    Square square_h1("h1");
+    Square square_h8("h8");
+
+    square_a1++;
+    ASSERT_EQ(square_a1.getValue(), Square::Value::B1);
+
+    square_h1++;
+    ASSERT_EQ(square_h1.getValue(), Square::Value::A2);
+
+    square_h8++;
+    ASSERT_EQ(square_h8.getValue(), Square::NONE);
+}
+
+TEST(GridTest, SquareIsValid) {
+    Square square_a1("a1");
+    Square square_h8("h8");
+    Square square_none("-");
+
+    ASSERT_EQ(square_a1.isValid(), true);
+    ASSERT_EQ(square_h8.isValid(), true);
+    ASSERT_EQ(square_none.isValid(), false);
+}
+
+TEST(GridTest, SquareToBitboard) {
+    ASSERT_EQ(Square::toBitboard(0), 0x0000000000000001ULL);
+    ASSERT_EQ(Square::toBitboard(1), 0x0000000000000002ULL);
+    ASSERT_EQ(Square::toBitboard(2), 0x0000000000000004ULL);
+    ASSERT_EQ(Square::toBitboard(63), 0x8000000000000000ULL);
+}
+
+TEST(GridTest, SquareGetEnPassantIndex) {
+    ASSERT_EQ(Square::getEnPassantSquare(26), 18);
+    ASSERT_EQ(Square::getEnPassantSquare(36), 44);
+}
+
+TEST(GridTest, SquareGetFileIndex) {
+    Square square_a1("a1");
+    Square square_b1("b1");
+    Square square_c5("c5");
+    Square square_h7("h7");
+
+    ASSERT_EQ(square_a1.getFileIndex(), 0);
+    ASSERT_EQ(square_b1.getFileIndex(), 1);
+    ASSERT_EQ(square_c5.getFileIndex(), 2);
+    ASSERT_EQ(square_h7.getFileIndex(), 7);
+}
+
+TEST(GridTest, SquareGetRankIndex) {
+    Square square_a1("a1");
+    Square square_b1("b1");
+    Square square_d3("d3");
+    Square square_e8("e8");
+
+    ASSERT_EQ(square_a1.getRankIndex(), 0);
+    ASSERT_EQ(square_b1.getRankIndex(), 0);
+    ASSERT_EQ(square_d3.getRankIndex(), 2);
+    ASSERT_EQ(square_e8.getRankIndex(), 7);
+}
