@@ -17,16 +17,10 @@
 class Perft {
 private:
     Board &board;
-    std::ofstream file;
 
-    uint64_t perft(int depth) const {
+    [[nodiscard]] uint64_t perft(int depth) const {
         std::vector<Move> moves;
         MoveGen::legalMoves(board, board.getSideToMove(), moves);
-
-//        file << board.toString();
-//        for(const auto &move : moves) {
-//            file << Square::toString(move.from_index()) << Square::toString(move.to_index()) << std::endl;
-//        }
 
         if(depth == 1) {
             return moves.size();
@@ -49,8 +43,6 @@ public:
     }
 
     void run(int depth) {
-        file.open("debug.txt");
-
         const auto t1 = std::chrono::high_resolution_clock::now();
         const auto nodes = perft(depth);
         const auto t2 = std::chrono::high_resolution_clock::now();
@@ -63,10 +55,9 @@ public:
            << " nps " << std::setw(9) << (nodes * 1000) / (ms + 1);
 
         std::cout << stringstream.str() << std::endl;
-        file.close();
     }
 
-    uint64_t nodes(int depth) const {
+    [[nodiscard]] uint64_t nodes(int depth) const {
         return perft(depth);
     }
 };

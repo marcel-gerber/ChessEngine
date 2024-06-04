@@ -5,6 +5,7 @@
 #ifndef CHESSENGINE_PIECE_HPP
 #define CHESSENGINE_PIECE_HPP
 
+#include "color.hpp"
 #include <cstdint>
 
 class PieceType {
@@ -80,8 +81,16 @@ public:
     }
 
     Piece(PieceType type, Color color) {
-        if(color == Color::NONE) piece = Piece::NONE;
-        if(type.getValue() == PieceType::NONE) piece = Piece::NONE;
+        if(color == Color::NONE) {
+            piece = Piece::NONE;
+            return;
+        }
+
+        if(type.getValue() == PieceType::NONE) {
+            piece = Piece::NONE;
+            return;
+        }
+
         piece = static_cast<Value>(color.getValue() * 6 + type.getIndex());
     }
 
@@ -178,6 +187,7 @@ public:
     }
 
     [[nodiscard]] PieceType getType() const {
+        if(piece == NONE) return PieceType::NONE;
         return static_cast<PieceType::Value>((uint8_t) piece % 6);
     }
 
