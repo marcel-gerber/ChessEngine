@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Update packages
+        run: |
+          sudo apt-get update
+          g++ --version
+      
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
