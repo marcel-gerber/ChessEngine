@@ -12,11 +12,12 @@ add_subdirectory(./googletest)
 # Source files
 add_executable(ChessEngine src/main.cpp)
 
+# Enable testing for ctest
+enable_testing()
+
 # Test files
 file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
 add_executable(ChessEngineTests ${TEST_SRC_FILES})
 
 # Link Tests to GTest main
 target_link_libraries(ChessEngineTests GTest::gtest_main)
-
-enable_testing()
