@@ -205,7 +205,7 @@ public:
         return (square >= Value::A1 && square <= Value::H8);
     }
 
-    static constexpr std::string toString(const uint8_t &index) {
+    [[maybe_unused]] static std::string toString(const uint8_t &index) {
         std::string string;
         string += 'a' + (index & 7);
         string += '1' + (index >> 3);
