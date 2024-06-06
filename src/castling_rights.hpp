@@ -7,7 +7,7 @@
 
 #include "color.hpp"
 #include <cstdint>
-#include <vector>
+#include <array>
 
 class Castling {
 public:
@@ -70,7 +70,7 @@ public:
         return castling_rights == static_cast<uint8_t>(NO_CASTLING);
     }
 
-    static constexpr std::vector<Value> getCastlings(const Color &color) {
+    static constexpr std::array<Value, 2> getCastlings(const Color &color) {
         switch(color.getValue()) {
             case static_cast<uint8_t>(Color::WHITE):
                 return {WHITE_00, WHITE_000};
