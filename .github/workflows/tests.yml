@@ -27,6 +27,5 @@ jobs:
         run: cmake --build build --target ChessEngineTests
 
       - name: Run tests
-        run: |
-          cd build
-          ctest
+        run:
+          ./build/ChessEngineTests
