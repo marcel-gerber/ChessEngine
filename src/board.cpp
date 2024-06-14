@@ -13,6 +13,34 @@ Board::Board() {
     castling_rights = Castling();
 }
 
+[[nodiscard]] Castling* Board::getCastlingRights() {
+    return &castling_rights;
+}
+
+[[nodiscard]] const Square* Board::getEnPassantSquare() const {
+    return &en_passant_square;
+}
+
+void Board::setEnPassantSquare(Square square) {
+    this->en_passant_square = square;
+}
+
+[[nodiscard]] Color Board::getSideToMove() const {
+    return this->side_to_move;
+}
+
+void Board::setSideToMove(Color color) {
+    this->side_to_move = color;
+}
+
+[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
+    return this->half_move_clock;
+}
+
+void Board::setHalfMoveClock(const uint8_t &half_move) {
+    this->half_move_clock = half_move;
+}
+
 void Board::placePiece(const Piece &piece, const uint8_t &index) {
     Bits::set(bb_pieces[piece.getType().getIndex()], index);
     Bits::set(bb_sides[piece.getColor().getValue()], index);
@@ -208,6 +236,80 @@ void Board::unmakeMove(const Move &move) {
     }
 }
 
+void Board::setFen(const std::string &fen) {
+    auto splitString = [](const std::string &string) -> std::vector<std::string> {
+        std::vector<std::string> result;
+        std::stringstream stringstream(string);
+        std::string item;
+
+        while(std::getline(stringstream, item, ' ')) {
+            result.push_back(item);
+        }
+        return result;
+    };
+
+    const auto split = splitString(fen);
+
+    const auto& fen_pieces = split[0];
+    const auto fen_side_to_move = split.size() > 1 ? split[1] : "w";
+    const auto fen_castling = split.size() > 2 ? split[2] : "-";
+    const auto fen_en_passant = split.size() > 3 ? split[3] : "-";
+    const auto half_move_clock_str = split.size() > 4 ? split[4] : "0";
+    const auto full_move_counter_str = split.size() > 5 ? split[5] : "1";
+
+    const uint8_t fen_half_move_clock = std::stoi(half_move_clock_str);
+    const uint16_t fen_full_move_counter = std::stoi(full_move_counter_str);
+
+    this->setHalfMoveClock(fen_half_move_clock);
+    this->setSideToMove(fen_side_to_move == "w" ? Color::WHITE : Color::BLACK);
+    this->setEnPassantSquare(Square(fen_en_passant));
+
+    // start at upper left corner of board
+    uint8_t index = 56;
+    for(const char &c : fen_pieces) {
+        auto piece = Piece(c);
+
+        if(piece != Piece::NONE) {
+            this->placePiece(piece, index);
+            index++;
+            continue;
+        }
+
+        if(c == '/') {
+            index -= 16;
+            continue;
+        }
+
+        if(isdigit(c)) {
+            index += (c - '0'); // get the numeric value of the character c
+        }
+    }
+
+    for(const char &c : fen_castling) {
+        if(c == '-') break;
+
+        if(c == 'K') {
+            this->castling_rights.set(Castling::WHITE_00);
+            continue;
+        }
+
+        if(c == 'Q') {
+            this->castling_rights.set(Castling::WHITE_000);
+            continue;
+        }
+
+        if(c == 'k') {
+            this->castling_rights.set(Castling::BLACK_00);
+            continue;
+        }
+
+        if(c == 'q') {
+            this->castling_rights.set(Castling::BLACK_000);
+            continue;
+        }
+    }
+}
+
 void Board::print() const {
     std::stringstream ss;
     uint8_t index = 56;
@@ -228,32 +330,4 @@ void Board::print() const {
     }
 
     std::cout << ss.str();
-}
-
-[[nodiscard]] Castling* Board::getCastlingRights() {
-    return &castling_rights;
-}
-
-[[nodiscard]] const Square* Board::getEnPassantSquare() const {
-    return &en_passant_square;
-}
-
-void Board::setEnPassantSquare(Square square) {
-    this->en_passant_square = square;
-}
-
-void Board::setSideToMove(Color color) {
-    this->side_to_move = color;
-}
-
-[[nodiscard]] Color Board::getSideToMove() const {
-    return this->side_to_move;
-}
-
-void Board::setHalfMoveClock(const uint8_t &half_move) {
-    this->half_move_clock = half_move;
-}
-
-[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
-    return this->half_move_clock;
 }

@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
+
 #include "../src/board.hpp"
-#include "../src/fen_parser.hpp"
 
 TEST(BoardTest, MakeAndUnmakeMove) {
     Board board = Board();
-    Fen::setFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    board.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     Move move_w = Move::create<MoveType::NORMAL>(12, 28);
     board.makeMove(move_w);

@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/grid.hpp"
 
 TEST(GridTest, FileGetBitboard) {

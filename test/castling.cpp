@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/castling.hpp"
 
 class CastlingTest : public testing::Test {

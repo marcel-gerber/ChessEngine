@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/color.hpp"
 
 class ColorTest : public testing::Test {

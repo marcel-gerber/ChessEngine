@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
+
+#include "../src/attacks.hpp"
+#include "../src/movegen.hpp"
 #include "../src/perft.hpp"
-#include "../src/fen_parser.hpp"
 
 class PerftTest : public testing::Test {
 protected:
@@ -29,7 +31,7 @@ TEST_F(PerftTest, StandardPositions) {
 
     for(const auto &perft_result : perft_results) {
         Board board = Board();
-        Fen::setFen(board, perft_result.fen);
+        board.setFen(perft_result.fen);
 
         Perft perft(board);
         const uint64_t nodes = perft.nodes(perft_result.depth);
@@ -63,7 +65,7 @@ TEST_F(PerftTest, AdvancedPositions) {
 
     for(const auto &perft_result : perft_results) {
         Board board = Board();
-        Fen::setFen(board, perft_result.fen);
+        board.setFen(perft_result.fen);
 
         Perft perft(board);
         const uint64_t nodes = perft.nodes(perft_result.depth);

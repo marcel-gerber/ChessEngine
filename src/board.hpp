@@ -76,6 +76,8 @@ public:
 
     void unmakeMove(const Move &move);
 
+    void setFen(const std::string &fen);
+
     void print() const;
 
 };

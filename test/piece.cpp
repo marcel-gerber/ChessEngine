@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/piece.hpp"
 
 TEST(PieceTest, OperatorMinus) {
