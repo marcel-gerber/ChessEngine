@@ -10,7 +10,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 add_subdirectory(./googletest)
 
 # Source files
-add_executable(ChessEngine src/main.cpp)
+file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+add_executable(ChessEngine src/utils/bits.cpp ${SRC_FILES})
 
 # Enable testing for ctest
 enable_testing()
