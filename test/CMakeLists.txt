@@ -10,3 +10,6 @@ add_executable(ChessEngineTests ${TEST_SRC_FILES})
 
 # Link Tests to GTest main
 target_link_libraries(ChessEngineTests GTest::gtest_main ChessLibrary)
+
+# Adding Tests
+add_test(NAME ChessEngineTests COMMAND ChessEngineTests)
