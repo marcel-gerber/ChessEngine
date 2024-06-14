@@ -5,7 +5,7 @@
 #ifndef CHESSENGINE_BOARD_HPP
 #define CHESSENGINE_BOARD_HPP
 
-#include "castling_rights.hpp"
+#include "castling.hpp"
 #include "color.hpp"
 #include "grid.hpp"
 #include "move.hpp"
@@ -26,7 +26,8 @@ private:
             castling_rights(castling),
             en_passant(en_passant),
             half_move_clock(half_moves),
-            captured(captured) { }
+            captured(captured) {
+        }
     };
 
     uint64_t bb_pieces[6] = { 0 };

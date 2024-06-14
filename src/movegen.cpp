@@ -16,17 +16,6 @@ void MoveGen::addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T f
     }
 }
 
-constexpr uint64_t MoveGen::shift(uint64_t bits, const int8_t &direction) {
-    switch(direction) {
-        case 8:
-            return bits << 8;
-        case -8:
-            return bits >> 8;
-        default:
-            return 0ULL;
-    }
-}
-
 void MoveGen::initSquaresBetween() {
     uint64_t squares_bb = 0ULL;
     uint64_t attacks = 0ULL;

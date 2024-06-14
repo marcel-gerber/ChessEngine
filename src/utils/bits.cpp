@@ -12,24 +12,6 @@ bool Bits::isSet(const uint64_t &bits, const uint8_t &index) {
     return bits & (1ULL << index);
 }
 
-constexpr uint8_t Bits::popcount(uint64_t &bits) {
-    return std::popcount(bits);
-}
-
-constexpr uint8_t Bits::popcount(uint64_t &&bits) {
-    return std::popcount(bits);
-}
-
-constexpr uint8_t Bits::lsb(uint64_t &bits) {
-    return std::countr_zero(bits);
-}
-
-constexpr uint8_t Bits::pop(uint64_t &bits) {
-    uint8_t index = std::countr_zero(bits);
-    bits &= bits - 1;
-    return index;
-}
-
 std::vector<uint8_t> Bits::getIndices(const uint64_t &bits) {
     std::vector<uint8_t> indices;
 

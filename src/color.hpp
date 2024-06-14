@@ -8,6 +8,7 @@
 #include <cstdint>
 
 class Color {
+
 public:
     enum class Value : uint8_t {
         WHITE,

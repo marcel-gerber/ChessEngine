@@ -21,7 +21,16 @@ private:
     template<typename T>
     static void addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T function);
 
-    static constexpr uint64_t shift(uint64_t bits, const int8_t &direction);
+    static constexpr uint64_t shift(uint64_t bits, const int8_t &direction) {
+        switch(direction) {
+            case 8:
+                return bits << 8;
+            case -8:
+                return bits >> 8;
+            default:
+                return 0ULL;
+        }
+    }
 
 public:
     static void initSquaresBetween();
