@@ -5,6 +5,7 @@
 #ifndef CHESSENGINE_MOVEGEN_HPP
 #define CHESSENGINE_MOVEGEN_HPP
 
+#include "utils/bits.hpp"
 #include "board.hpp"
 #include "color.hpp"
 #include "move.hpp"
@@ -19,7 +20,17 @@ private:
     static inline uint64_t SQUARES_BETWEEN[64][64] = { 0 };
 
     template<typename T>
-    static void addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T function);
+    static void addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T function) {
+        while(bb_from) {
+            const uint8_t index_from = Bits::pop(bb_from);
+            uint64_t bb_moves = function(index_from);
+
+            while(bb_moves) {
+                const uint8_t index_to = Bits::pop(bb_moves);
+                moves.push_back(Move::create<MoveType::NORMAL>(index_from, index_to));
+            }
+        }
+    }
 
     static constexpr uint64_t shift(uint64_t bits, const int8_t &direction) {
         switch(direction) {

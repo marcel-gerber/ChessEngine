@@ -1,20 +1,6 @@
 #include "attacks.hpp"
-#include "utils/bits.hpp"
 #include "grid.hpp"
 #include "movegen.hpp"
-
-template<typename T>
-void MoveGen::addMoveToMoveList(std::vector<Move> &moves, uint64_t &bb_from, T function) {
-    while(bb_from) {
-        const uint8_t index_from = Bits::pop(bb_from);
-        uint64_t bb_moves = function(index_from);
-
-        while(bb_moves) {
-            const uint8_t index_to = Bits::pop(bb_moves);
-            moves.push_back(Move::create<MoveType::NORMAL>(index_from, index_to));
-        }
-    }
-}
 
 void MoveGen::initSquaresBetween() {
     uint64_t squares_bb = 0ULL;
