@@ -396,7 +396,7 @@ void MoveGen::generateCastleMoves(Board &board, std::vector<Move> &moves, const 
 
     const uint8_t king_index = board.getKingIndex(color);
 
-    for(const auto castle : Castling::getCastlings(color)) {
+    for(const auto castle : Castling::getCastlings<color>()) {
         if(!castling_rights->has(castle)) continue;
 
         const uint8_t end_king_index = Castling::getEndingKingIndex(castle);

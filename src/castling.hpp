@@ -45,11 +45,12 @@ public:
 
     [[nodiscard]] bool hasNoCastling() const;
 
-    static constexpr std::array<Value, 2> getCastlings(const Color &color) {
-        switch(color.getValue()) {
-            case static_cast<uint8_t>(Color::WHITE):
+    template<Color::Value color>
+    static constexpr std::array<Value, 2> getCastlings() {
+        switch(color) {
+            case Color::WHITE:
                 return {WHITE_00, WHITE_000};
-            case static_cast<uint8_t>(Color::BLACK):
+            case Color::BLACK:
                 return {BLACK_00, BLACK_000};
             default:
                 return { };
