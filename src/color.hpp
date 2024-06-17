@@ -26,6 +26,11 @@ public:
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 
+    template<Color::Value color>
+    static constexpr Value opposite() {
+        return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
+    }
+
     [[nodiscard]] constexpr uint8_t getValue() const {
         return static_cast<uint8_t>(color);
     }

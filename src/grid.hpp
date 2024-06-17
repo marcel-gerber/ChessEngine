@@ -93,28 +93,6 @@ public:
         }
     }
 
-    static constexpr uint64_t getRankBeforePromo(const Color &color) {
-        switch(color.getValue()) {
-            case static_cast<uint8_t>(Color::WHITE):
-                return RANK_7BB;
-            case static_cast<uint8_t>(Color::BLACK):
-                return RANK_2BB;
-            default:
-                return 0ULL;
-        }
-    }
-
-    static constexpr uint64_t getPromoRank(const Color &color) {
-        switch(color.getValue()) {
-            case static_cast<uint8_t>(Color::WHITE):
-                return RANK_8BB;
-            case static_cast<uint8_t>(Color::BLACK):
-                return RANK_1BB;
-            default:
-                return 0ULL;
-        }
-    }
-
     template<Color::Value color>
     static constexpr uint64_t getPromoRank() {
         switch(color) {
@@ -133,17 +111,6 @@ public:
             case Color::WHITE:
                 return RANK_3BB;
             case Color::BLACK:
-                return RANK_6BB;
-            default:
-                return 0ULL;
-        }
-    }
-
-    static constexpr uint64_t getDoublePushRank(const Color &color) {
-        switch(color.getValue()) {
-            case static_cast<uint8_t>(Color::WHITE):
-                return RANK_3BB;
-            case static_cast<uint8_t>(Color::BLACK):
                 return RANK_6BB;
             default:
                 return 0ULL;

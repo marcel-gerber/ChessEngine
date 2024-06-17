@@ -46,17 +46,22 @@ private:
 public:
     static void initSquaresBetween();
 
-    static uint64_t pinMaskHV(const Board &board, Color color);
+    template<Color::Value color>
+    static uint64_t pinMaskHV(const Board &board);
 
-    static uint64_t pinMaskDiagonal(const Board &board, Color color);
+    template<Color::Value color>
+    static uint64_t pinMaskDiagonal(const Board &board);
 
-    static uint64_t attackedSquares(const Board &board, Color color);
+    template<Color::Value color>
+    static uint64_t attackedSquares(const Board &board);
 
-    static std::tuple<uint64_t, uint8_t> checkMask(const Board &board, Color color);
+    template<Color::Value color>
+    static std::tuple<uint64_t, uint8_t> checkMask(const Board &board);
 
     static void getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction);
 
-    static void generatePawnMoves(const Board &board, const Color &color, std::vector<Move> &moves, const uint64_t &pin_hv,
+    template<Color::Value color>
+    static void generatePawnMoves(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
                                   const uint64_t &pin_d, const uint64_t &checkmask);
 
     static uint64_t generateKnightMoves(const uint8_t &index);
@@ -71,9 +76,13 @@ public:
     static uint64_t generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked,
                                       const uint64_t &bb_movable_squares);
 
-    static void generateCastleMoves(Board &board, const Color &color, std::vector<Move> &moves, const uint64_t &bb_attacked);
+    template<Color::Value color>
+    static void generateCastleMoves(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
 
-    static void legalMoves(Board &board, const Color &color, std::vector<Move> &moves);
+    template<Color::Value color>
+    static void legalMoves(Board &board, std::vector<Move> &moves);
+
+    static void legalMoves(Board &board, std::vector<Move> &moves);
 
 };
 
