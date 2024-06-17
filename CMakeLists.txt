@@ -15,7 +15,8 @@ check_ipo_supported(RESULT ipo_supported OUTPUT error)
 if(ipo_supported)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 else()
-    message(WARNING "IPO/LTO is not supported: ${error}")
+    message(NOTICE "INFO: LTO has been disabled, because is not supported in this configuration.")
+    message(NOTICE "INFO: This is not critical as it only optimizes performance.")
 endif()
 
 # Adding /src and /test
