@@ -468,7 +468,7 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
         return generateKnightMoves(index) & movable_squares;
     });
 
-    // Bishop moves (those that are not horizontally pinned)
+    // Bishop moves (those that are not horizontally/vertically pinned)
     uint64_t bb_bishops = board.getPieces(color, PieceType::BISHOP) & ~pin_hv;
     addMoveToMoveList(moves, bb_bishops, [&](uint8_t index) {
         return generateBishopMoves(index, pin_d, bb_occupied) & movable_squares;
@@ -480,7 +480,7 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
         return generateRookMoves(index, pin_hv, bb_occupied) & movable_squares;
     });
 
-    // Queen moves (those that are not diagonally pinned)
+    // Queen moves (those that are not both horizontally/vertically and diagonally pinned)
     uint64_t bb_queens = board.getPieces(color, PieceType::QUEEN) & ~(pin_hv & pin_d);
     addMoveToMoveList(moves, bb_queens, [&](uint8_t index) {
         return generateQueenMoves(index, pin_hv, pin_d, bb_occupied) & movable_squares;
