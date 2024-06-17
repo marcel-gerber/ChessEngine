@@ -12,8 +12,7 @@ void MoveGen::initSquaresBetween() {
 
             squares_bb = (1ULL << square1.getIndex()) | (1ULL << square2.getIndex());
 
-            if(square1.getFileIndex() == square2.getFileIndex()
-               || square1.getRankIndex() == square2.getRankIndex()) {
+            if(square1.getFileIndex() == square2.getFileIndex() || square1.getRankIndex() == square2.getRankIndex()) {
 
                 attacks = Attacks::getRookAttacks(square1.getIndex(), squares_bb)
                           & Attacks::getRookAttacks(square2.getIndex(), squares_bb);
@@ -182,7 +181,7 @@ void MoveGen::getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_
 
 template<Color::Value color>
 void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
-                              const uint64_t &pin_d, const uint64_t &checkmask) {
+                                const uint64_t &pin_d, const uint64_t &checkmask) {
     const int8_t UP = color == Color::WHITE ? 8 : -8;
     const int8_t DOWN = color == Color::WHITE ? -8 : 8;
     const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
@@ -386,8 +385,7 @@ uint64_t MoveGen::generateQueenMoves(const uint8_t &index, const uint64_t &pin_h
     return Attacks::getQueenAttacks(index, bb_occupied);
 }
 
-uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked,
-                                  const uint64_t &bb_movable_squares) {
+uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked, const uint64_t &bb_movable_squares) {
     return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
 }
 
@@ -511,7 +509,7 @@ template std::tuple<uint64_t, uint8_t> MoveGen::checkMask<Color::WHITE>(const Bo
 template std::tuple<uint64_t, uint8_t> MoveGen::checkMask<Color::BLACK>(const Board &board);
 
 template void MoveGen::generatePawnMoves<Color::WHITE>(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
-                                         const uint64_t &pin_d, const uint64_t &checkmask);
+                                                       const uint64_t &pin_d, const uint64_t &checkmask);
 template void MoveGen::generatePawnMoves<Color::BLACK>(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
                                                        const uint64_t &pin_d, const uint64_t &checkmask);
 
