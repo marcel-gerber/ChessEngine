@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "../src/castling_rights.hpp"
+
+#include "../src/castling.hpp"
 
 class CastlingTest : public testing::Test {
 protected:

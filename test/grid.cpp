@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/grid.hpp"
 
 TEST(GridTest, FileGetBitboard) {
@@ -24,15 +25,15 @@ TEST(GridTest, RankGetBitboard) {
 }
 
 TEST(GridTest, GetPromoRank) {
-    ASSERT_EQ(Rank::getPromoRank(Color::WHITE), Rank::RANK_8BB);
-    ASSERT_EQ(Rank::getPromoRank(Color::BLACK), Rank::RANK_1BB);
-    ASSERT_EQ(Rank::getPromoRank(Color::NONE), 0ULL);
+    ASSERT_EQ(Rank::getPromoRank<Color::WHITE>(), Rank::RANK_8BB);
+    ASSERT_EQ(Rank::getPromoRank<Color::BLACK>(), Rank::RANK_1BB);
+    ASSERT_EQ(Rank::getPromoRank<Color::NONE>(), 0ULL);
 }
 
 TEST(GridTest, GetDoublePushRank) {
-    ASSERT_EQ(Rank::getDoublePushRank(Color::WHITE), Rank::RANK_3BB);
-    ASSERT_EQ(Rank::getDoublePushRank(Color::BLACK), Rank::RANK_6BB);
-    ASSERT_EQ(Rank::getDoublePushRank(Color::NONE), 0ULL);
+    ASSERT_EQ(Rank::getDoublePushRank<Color::WHITE>(), Rank::RANK_3BB);
+    ASSERT_EQ(Rank::getDoublePushRank<Color::BLACK>(), Rank::RANK_6BB);
+    ASSERT_EQ(Rank::getDoublePushRank<Color::NONE>(), 0ULL);
 }
 
 TEST(GridTest, SquareConstructor) {

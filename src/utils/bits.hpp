@@ -12,6 +12,7 @@
 #include <iostream>
 
 class Bits {
+
 public:
     static void set(uint64_t &bits, const uint8_t &index) {
         bits |= (1ULL << index);
@@ -47,7 +48,7 @@ public:
         std::vector<uint8_t> indices;
 
         for(uint8_t i = 0; i < 64; i++) {
-            if(((bits >> i) & 1) == 1) {
+            if(isSet(bits, i)) {
                 indices.push_back(i);
             }
         }
@@ -59,7 +60,7 @@ public:
 
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
-                if(((bits >> index) & 1) == 1) {
+                if(isSet(bits, index)) {
                     std::cout << "1 ";
                 } else {
                     std::cout << ". ";

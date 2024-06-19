@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "../src/misc/bits.hpp"
+
+#include "../src/utils/bits.hpp"
 
 TEST(BitsTest, Set) {
     uint64_t bits = 0ULL;

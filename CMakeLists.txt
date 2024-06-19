@@ -1,23 +1,24 @@
 cmake_minimum_required(VERSION 3.27)
 project(ChessEngine)
 
+# Set C++ Standard
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set Compiler flags
 set(GCC_COVERAGE_COMPILE_FLAGS "-O3 -march=native -std=c++20")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
-# Add GTest submodule
-add_subdirectory(./googletest)
+# Activating LTO if supported
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT error)
+if(ipo_supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    message(NOTICE "INFO: LTO has been disabled, because is not supported in this configuration.")
+    message(NOTICE "INFO: This is not critical as it only optimizes performance.")
+endif()
 
-# Source files
-add_executable(ChessEngine src/main.cpp)
-
-# Enable testing for ctest
-enable_testing()
-
-# Test files
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
-add_executable(ChessEngineTests ${TEST_SRC_FILES})
-
-# Link Tests to GTest main
-target_link_libraries(ChessEngineTests GTest::gtest_main)
+# Adding /src and /test
+add_subdirectory(src)
+add_subdirectory(test)

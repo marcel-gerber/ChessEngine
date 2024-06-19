@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/color.hpp"
 
 class ColorTest : public testing::Test {
@@ -19,6 +20,11 @@ protected:
 TEST_F(ColorTest, GetOppositeColor) {
     ASSERT_EQ(color_w.getOppositeColor(), Color::BLACK);
     ASSERT_EQ(color_b.getOppositeColor(), Color::WHITE);
+}
+
+TEST_F(ColorTest, Opposite) {
+    ASSERT_EQ(Color::opposite<Color::WHITE>(), Color::BLACK);
+    ASSERT_EQ(Color::opposite<Color::BLACK>(), Color::WHITE);
 }
 
 TEST_F(ColorTest, GetValue) {

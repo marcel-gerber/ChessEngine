@@ -5,10 +5,12 @@
 #ifndef CHESSENGINE_MOVE_HPP
 #define CHESSENGINE_MOVE_HPP
 
-#include <cstdint>
 #include "piece.hpp"
 
+#include <cstdint>
+
 class MoveType {
+
 public:
     enum class Value : uint16_t {
         NORMAL,
@@ -24,6 +26,7 @@ public:
 };
 
 class Move {
+
 public:
     Move() = default;
 

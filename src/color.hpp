@@ -8,6 +8,7 @@
 #include <cstdint>
 
 class Color {
+
 public:
     enum class Value : uint8_t {
         WHITE,
@@ -22,6 +23,11 @@ public:
     }
 
     [[nodiscard]] constexpr Value getOppositeColor() const {
+        return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
+    }
+
+    template<Color::Value color>
+    static constexpr Value opposite() {
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 

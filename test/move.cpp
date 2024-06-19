@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+
 #include "../src/move.hpp"
 
 TEST(MoveTest, FromIndex) {
