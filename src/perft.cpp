@@ -12,7 +12,7 @@ Perft::Perft(Board &board) : board(board) {
 
 [[nodiscard]] uint64_t Perft::perft(int depth) const {
     std::vector<Move> moves;
-    MoveGen::legalMoves(board, moves);
+    MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
 
     if(depth == 1) {
         return moves.size();

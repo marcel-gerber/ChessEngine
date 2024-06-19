@@ -179,7 +179,7 @@ void MoveGen::getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_
     moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::QUEEN));
 }
 
-template<Color::Value color>
+template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
                                 const uint64_t &pin_d, const uint64_t &checkmask) {
     const int8_t UP = color == Color::WHITE ? 8 : -8;
@@ -213,7 +213,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     single_push_unpinned &= checkmask;
     single_push_pinned &= checkmask;
 
-    while(single_push_unpinned) {
+    while(moveGenType != MoveGenType::CAPTURE && single_push_unpinned) {
         const uint8_t target_index = Bits::pop(single_push_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
@@ -224,7 +224,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN, target_index));
     }
 
-    while(single_push_pinned) {
+    while(moveGenType != MoveGenType::CAPTURE && single_push_pinned) {
         const uint8_t target_index = Bits::pop(single_push_pinned);
         if(!(Square::toBitboard(target_index) & pin_hv)) continue;
 
@@ -232,7 +232,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     }
 
     // if there are no pawns that can double push -> skip this part
-    if((double_push_unpinned | double_push_pinned)) {
+    if(moveGenType != MoveGenType::CAPTURE && (double_push_unpinned | double_push_pinned)) {
         double_push_unpinned = shift(double_push_unpinned, UP) & bb_empty & checkmask;
         double_push_pinned = shift(double_push_pinned, UP) & bb_empty & checkmask;
 
@@ -253,7 +253,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     uint64_t pawns_left_unpinned = Attacks::getPawnLeftAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
     uint64_t pawns_right_unpinned = Attacks::getPawnRightAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
 
-    while(pawns_left_unpinned) {
+    while(moveGenType != MoveGenType::QUIET && pawns_left_unpinned) {
         const uint8_t target_index = Bits::pop(pawns_left_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
@@ -264,7 +264,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
     }
 
-    while(pawns_right_unpinned) {
+    while(moveGenType != MoveGenType::QUIET && pawns_right_unpinned) {
         const uint8_t target_index = Bits::pop(pawns_right_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
@@ -279,7 +279,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     uint64_t pawns_left_pinned = Attacks::getPawnLeftAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
     uint64_t pawns_right_pinned = Attacks::getPawnRightAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
 
-    while(pawns_left_pinned) {
+    while(moveGenType != MoveGenType::QUIET && pawns_left_pinned) {
         const uint8_t target_index = Bits::pop(pawns_left_pinned);
         const uint64_t target_sq_bb = Square::toBitboard(target_index);
 
@@ -293,7 +293,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_RIGHT, target_index));
     }
 
-    while(pawns_right_pinned) {
+    while(moveGenType != MoveGenType::QUIET && pawns_right_pinned) {
         const uint8_t target_index = Bits::pop(pawns_right_pinned);
         const uint64_t target_sq_bb = Square::toBitboard(target_index);
 
@@ -306,6 +306,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
 
         moves.push_back(Move::create<MoveType::NORMAL>(target_index + DOWN_LEFT, target_index));
     }
+
+    if constexpr(moveGenType == MoveGenType::QUIET) return;
 
     // En Passant
     const Square* en_passant = board.getEnPassantSquare();
@@ -389,8 +391,10 @@ uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_att
     return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
 }
 
-template<Color::Value color>
+template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::generateCastleMoves(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked) {
+    if constexpr(moveGenType == MoveGenType::CAPTURE) return;
+
     const auto castling_rights = board.getCastlingRights();
     if(castling_rights->hasNoCastling()) return;
 
@@ -430,15 +434,26 @@ void MoveGen::generateCastleMoves(Board &board, std::vector<Move> &moves, const 
     }
 }
 
-template<Color::Value color>
+template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
     uint64_t bb_king = board.getPieces(color, PieceType::KING);
 
     uint64_t bb_occupied = board.getOccupancy();
     uint64_t bb_occ_us = board.getSide(color);
+    uint64_t bb_opponent = board.getSide(Color::opposite<color>());
 
-    // All empty squares and opponent pieces
-    uint64_t movable_squares = ~bb_occ_us;
+    uint64_t movable_squares;
+
+    if constexpr(moveGenType == MoveGenType::ALL) {
+        // All empty squares and opponent pieces
+        movable_squares = ~bb_occ_us;
+    } else if constexpr(moveGenType == MoveGenType::CAPTURE) {
+        // Only opponent pieces
+        movable_squares = bb_opponent;
+    } else {
+        // Only empty squares
+        movable_squares = ~(bb_occ_us | bb_opponent);
+    }
 
     auto [checkmask, double_check] = MoveGen::checkMask<color>(board);
     uint64_t pin_hv = pinMaskHV<color>(board);
@@ -453,14 +468,14 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
     });
 
     // Castling moves
-    generateCastleMoves<color>(board, moves, attacked);
+    generateCastleMoves<color, moveGenType>(board, moves, attacked);
 
     movable_squares &= checkmask;
 
     if(double_check == 2) return;
 
     // Pawn moves
-    generatePawnMoves<color>(board, moves, pin_hv, pin_d, checkmask);
+    generatePawnMoves<color, moveGenType>(board, moves, pin_hv, pin_d, checkmask);
 
     // Knight moves (those that are not pinned)
     uint64_t bb_knights = board.getPieces(color, PieceType::KNIGHT) & ~(pin_hv | pin_d);
@@ -487,10 +502,16 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
     });
 }
 
+template<MoveGenType moveGenType>
 void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
     if(board.getSideToMove() == Color::WHITE) {
-        legalMoves<Color::WHITE>(board, moves);
+        legalMoves<Color::WHITE, moveGenType>(board, moves);
         return;
     }
-    legalMoves<Color::BLACK>(board, moves);
+    legalMoves<Color::BLACK, moveGenType>(board, moves);
 }
+
+// Explicit instantiation
+template void MoveGen::legalMoves<MoveGenType::ALL>(Board &board, std::vector<Move> &moves);
+template void MoveGen::legalMoves<MoveGenType::CAPTURE>(Board &board, std::vector<Move> &moves);
+template void MoveGen::legalMoves<MoveGenType::QUIET>(Board &board, std::vector<Move> &moves);
