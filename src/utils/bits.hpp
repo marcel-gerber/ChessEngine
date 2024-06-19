@@ -14,11 +14,17 @@
 class Bits {
 
 public:
-    static void set(uint64_t &bits, const uint8_t &index);
+    static void set(uint64_t &bits, const uint8_t &index) {
+        bits |= (1ULL << index);
+    }
 
-    static void unset(uint64_t &bits, const uint8_t &index);
+    static void unset(uint64_t &bits, const uint8_t &index) {
+        bits &= ~(1ULL << index);
+    }
 
-    static bool isSet(const uint64_t &bits, const uint8_t &index);
+    static bool isSet(const uint64_t &bits, const uint8_t &index) {
+        return bits & (1ULL << index);
+    }
 
     static constexpr uint8_t popcount(uint64_t &bits) {
         return std::popcount(bits);
@@ -38,9 +44,33 @@ public:
         return index;
     }
 
-    static std::vector<uint8_t> getIndices(const uint64_t &bits);
+    static std::vector<uint8_t> getIndices(const uint64_t &bits) {
+        std::vector<uint8_t> indices;
 
-    static void print(const uint64_t &bits);
+        for(uint8_t i = 0; i < 64; i++) {
+            if(isSet(bits, i)) {
+                indices.push_back(i);
+            }
+        }
+        return indices;
+    }
+
+    static void print(const uint64_t &bits) {
+        int index = 56;
+
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+                if(isSet(bits, index)) {
+                    std::cout << "1 ";
+                } else {
+                    std::cout << ". ";
+                }
+                index++;
+            }
+            index -= 16;
+            std::cout << std::endl;
+        }
+    }
 };
 
 #endif
