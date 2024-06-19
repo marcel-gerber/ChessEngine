@@ -494,27 +494,3 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
     }
     legalMoves<Color::BLACK>(board, moves);
 }
-
-// Explicit instantiation
-template uint64_t MoveGen::pinMaskHV<Color::WHITE>(const Board &board);
-template uint64_t MoveGen::pinMaskHV<Color::BLACK>(const Board &board);
-
-template uint64_t MoveGen::pinMaskDiagonal<Color::WHITE>(const Board &board);
-template uint64_t MoveGen::pinMaskDiagonal<Color::BLACK>(const Board &board);
-
-template uint64_t MoveGen::attackedSquares<Color::WHITE>(const Board &board);
-template uint64_t MoveGen::attackedSquares<Color::BLACK>(const Board &board);
-
-template std::tuple<uint64_t, uint8_t> MoveGen::checkMask<Color::WHITE>(const Board &board);
-template std::tuple<uint64_t, uint8_t> MoveGen::checkMask<Color::BLACK>(const Board &board);
-
-template void MoveGen::generatePawnMoves<Color::WHITE>(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
-                                                       const uint64_t &pin_d, const uint64_t &checkmask);
-template void MoveGen::generatePawnMoves<Color::BLACK>(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
-                                                       const uint64_t &pin_d, const uint64_t &checkmask);
-
-template void MoveGen::generateCastleMoves<Color::WHITE>(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
-template void MoveGen::generateCastleMoves<Color::BLACK>(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
-
-template void MoveGen::legalMoves<Color::WHITE>(Board &board, std::vector<Move> &moves);
-template void MoveGen::legalMoves<Color::BLACK>(Board &board, std::vector<Move> &moves);
