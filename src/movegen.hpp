@@ -14,6 +14,12 @@
 #include <tuple>
 #include <vector>
 
+enum class MoveGenType : uint8_t {
+    ALL,
+    CAPTURE,
+    QUIET
+};
+
 class MoveGen {
 
 private:
@@ -60,7 +66,7 @@ public:
 
     static void getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction);
 
-    template<Color::Value color>
+    template<Color::Value color, MoveGenType moveGenType>
     static void generatePawnMoves(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,
                                   const uint64_t &pin_d, const uint64_t &checkmask);
 
@@ -76,12 +82,13 @@ public:
     static uint64_t generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked,
                                       const uint64_t &bb_movable_squares);
 
-    template<Color::Value color>
+    template<Color::Value color, MoveGenType moveGenType>
     static void generateCastleMoves(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
 
-    template<Color::Value color>
+    template<Color::Value color, MoveGenType moveGenType>
     static void legalMoves(Board &board, std::vector<Move> &moves);
 
+    template<MoveGenType moveGenType>
     static void legalMoves(Board &board, std::vector<Move> &moves);
 
 };
