@@ -6,6 +6,11 @@
 #include <array>
 #include <cstdint>
 
+enum class GameState : uint8_t {
+    MIDDLEGAME,
+    ENDGAME
+};
+
 class Eval {
 
 private:
@@ -177,7 +182,10 @@ private:
     };
 
 public:
-    static int evaluate(Board &board);
+    template<GameState gameState>
+    static int evaluate(const Board &board);
+
+    static int evaluate(const Board &board);
 
 };
 

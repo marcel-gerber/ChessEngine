@@ -1,7 +1,8 @@
 #include "utils/bits.hpp"
 #include "eval.hpp"
 
-int Eval::evaluate(Board &board) {
+template<GameState gameState>
+int Eval::evaluate(const Board &board) {
     int eval = 0;
 
     // white pieces
@@ -77,8 +78,24 @@ int Eval::evaluate(Board &board) {
     }
 
     // Kings
-    eval += KING_MIDDLEGAME_POSITIONS[0][board.getKingIndex(Color::WHITE)];
-    eval -= KING_MIDDLEGAME_POSITIONS[1][board.getKingIndex(Color::BLACK)];
+    if constexpr(gameState == GameState::MIDDLEGAME) {
+        eval += KING_MIDDLEGAME_POSITIONS[0][board.getKingIndex(Color::WHITE)];
+        eval -= KING_MIDDLEGAME_POSITIONS[1][board.getKingIndex(Color::BLACK)];
+    } else {
+        eval += KING_ENDGAME_POSITIONS[0][board.getKingIndex(Color::WHITE)];
+        eval -= KING_ENDGAME_POSITIONS[1][board.getKingIndex(Color::BLACK)];
+    }
 
     return board.getSideToMove() == Color::WHITE ? eval : (eval * -1);
+}
+
+int Eval::evaluate(const Board &board) {
+    // Count major (Queen and Rooks) and minor (Bishops and Knights) pieces
+    uint64_t major_and_minor = board.getOccupancy() & ~board.getPieces(PieceType::PAWN);
+    const uint8_t piece_count = Bits::popcount(major_and_minor) - 2;
+
+    if(piece_count < 7) {
+        return evaluate<GameState::ENDGAME>(board);
+    }
+    return evaluate<GameState::MIDDLEGAME>(board);
 }
