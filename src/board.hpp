@@ -64,6 +64,8 @@ public:
 
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const;
 
+    [[nodiscard]] uint64_t getPieces(const PieceType &pieceType) const;
+
     [[nodiscard]] Piece getPiece(const uint8_t &index) const;
 
     [[nodiscard]] uint64_t getSide(Color color) const;

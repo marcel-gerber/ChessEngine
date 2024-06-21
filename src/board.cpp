@@ -57,6 +57,10 @@ void Board::removePiece(const Piece &piece, const uint8_t &index) {
     return bb_sides[color.getValue()] & bb_pieces[pieceType.getIndex()];
 }
 
+[[nodiscard]] uint64_t Board::getPieces(const PieceType &pieceType) const {
+    return bb_pieces[pieceType.getIndex()];
+}
+
 [[nodiscard]] Piece Board::getPiece(const uint8_t &index) const {
     return pieces[index];
 }
