@@ -17,12 +17,14 @@
 class Board {
 private:
     struct StateInfo {
+        uint64_t hash;
         Castling castling_rights;
         Square en_passant;
         uint8_t half_move_clock;
         Piece captured;
 
-        StateInfo(const Castling &castling, const Square &en_passant, const uint8_t &half_moves, const Piece &captured) :
+        StateInfo(const uint64_t &hash, const Castling &castling, const Square &en_passant, const uint8_t &half_moves, const Piece &captured) :
+            hash(hash),
             castling_rights(castling),
             en_passant(en_passant),
             half_move_clock(half_moves),
@@ -34,6 +36,7 @@ private:
     uint64_t bb_sides[2] = { 0 };
     Piece pieces[64] = { };
 
+    uint64_t zobrist_hash = 0ULL;
     Castling castling_rights;
     Square en_passant_square = Square::NONE;
     uint8_t half_move_clock = 0;

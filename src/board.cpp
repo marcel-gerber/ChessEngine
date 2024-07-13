@@ -1,6 +1,7 @@
 #include "attacks.hpp"
 #include "utils/bits.hpp"
 #include "board.hpp"
+#include "zobrist.hpp"
 
 #include <cassert>
 #include <sstream>
@@ -86,33 +87,44 @@ void Board::makeMove(const Move &move) {
     const Piece moved = getPiece(from);
     const Piece captured = getPiece(to);
 
-    StateInfo stateInfo = StateInfo(castling_rights, en_passant_square, half_move_clock, captured);
+    StateInfo stateInfo = StateInfo(zobrist_hash, castling_rights, en_passant_square, half_move_clock, captured);
     prev_state_infos.push(stateInfo);
 
     half_move_clock++;
 
     if(en_passant_square.getValue() != Square::NONE) {
+        zobrist_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
         en_passant_square = Square::NONE;
     }
 
     if(captured != Piece::NONE) {
         removePiece(captured, to);
 
+        half_move_clock = 0;
+        zobrist_hash ^= Zobrist::piece(captured, to);
+
         // Remove castling right if rook has been captured
         if(captured.getType().getValue() == PieceType::ROOK) {
             const Castling::Value castling = Castling::getFromRookIndex(to);
-            this->castling_rights.unset(castling);
+            castling_rights.unset(castling);
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         }
     }
 
     if(castling_rights.has(side_to_move)) {
         if(moved.getType().getValue() == PieceType::KING) {
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+
             // Remove castling rights if king moves
             castling_rights.unset(side_to_move);
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         } else if(moved.getType().getValue() == PieceType::ROOK) {
             // Remove castling rights if rook moves
             const Castling::Value castling = Castling::getFromRookIndex(from);
+
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
             this->castling_rights.unset(castling);
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         }
     }
 
@@ -127,6 +139,7 @@ void Board::makeMove(const Move &move) {
             // if enemy pawns are attacking the en passant square -> set board's en passant square
             if(ep_mask & getPieces(side_to_move.getOppositeColor(), PieceType::PAWN)) {
                 en_passant_square = Square(ep_square_index);
+                zobrist_hash ^= Zobrist::en_passant(ep_square_index);
             }
         }
     }
@@ -145,16 +158,23 @@ void Board::makeMove(const Move &move) {
         // Place king and rook at new positions
         placePiece(moved, to);
         placePiece(rook, ending_rook_index);
+
+        zobrist_hash ^= Zobrist::piece(moved, from) ^ Zobrist::piece(moved, to);
+        zobrist_hash ^= Zobrist::piece(rook, starting_rook_index) ^ Zobrist::piece(rook, ending_rook_index);
     } else if(type == MoveType::PROMOTION) {
         const PieceType promotion_type = PieceType(move.promotion_type());
         const Piece promotion_piece = Piece(promotion_type, side_to_move);
 
         removePiece(moved, from);
         placePiece(promotion_piece, to);
+
+        zobrist_hash ^= Zobrist::piece(moved, from) ^ Zobrist::piece(promotion_piece, to);
     } else {
         // Place the moved piece at the new position
         removePiece(moved, from);
         placePiece(moved, to);
+
+        zobrist_hash ^= Zobrist::piece(moved, from) ^ Zobrist::piece(moved, to);
     }
 
     if(type == MoveType::EN_PASSANT) {
@@ -163,8 +183,11 @@ void Board::makeMove(const Move &move) {
 
         // TODO: understanding this ??
         removePiece(pawn, ep_square_index);
+
+        zobrist_hash ^= Zobrist::piece(pawn, ep_square_index);
     }
 
+    zobrist_hash ^= Zobrist::side_to_move();
     side_to_move = side_to_move.getOppositeColor();
 }
 
@@ -172,6 +195,7 @@ void Board::unmakeMove(const Move &move) {
     const StateInfo prev = prev_state_infos.top();
     prev_state_infos.pop();
 
+    zobrist_hash = prev.hash;
     castling_rights = prev.castling_rights;
     en_passant_square = prev.en_passant;
     half_move_clock = prev.half_move_clock;
