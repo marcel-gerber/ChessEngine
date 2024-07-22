@@ -14,6 +14,10 @@ Board::Board() {
     castling_rights = Castling();
 }
 
+[[nodiscard]] uint64_t Board::getZobrist() const {
+    return zobrist_hash;
+}
+
 [[nodiscard]] Castling* Board::getCastlingRights() {
     return &castling_rights;
 }
@@ -106,6 +110,9 @@ void Board::makeMove(const Move &move) {
         // Remove castling right if rook has been captured
         if(captured.getType().getValue() == PieceType::ROOK) {
             const Castling::Value castling = Castling::getFromRookIndex(to);
+
+            // Update zobrist hashes and unset castling rights
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
             castling_rights.unset(castling);
             zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         }
@@ -113,9 +120,8 @@ void Board::makeMove(const Move &move) {
 
     if(castling_rights.has(side_to_move)) {
         if(moved.getType().getValue() == PieceType::KING) {
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
-
             // Remove castling rights if king moves
+            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
             castling_rights.unset(side_to_move);
             zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         } else if(moved.getType().getValue() == PieceType::ROOK) {
@@ -123,7 +129,7 @@ void Board::makeMove(const Move &move) {
             const Castling::Value castling = Castling::getFromRookIndex(from);
 
             zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
-            this->castling_rights.unset(castling);
+            castling_rights.unset(castling);
             zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
         }
     }
@@ -336,6 +342,28 @@ void Board::setFen(const std::string &fen) {
             continue;
         }
     }
+    initZobrist();
+}
+
+void Board::initZobrist() {
+    uint64_t w_pieces = getSide(Color::WHITE);
+    while(w_pieces) {
+        uint8_t index = Bits::pop(w_pieces);
+        zobrist_hash ^= Zobrist::piece(getPiece(index), index);
+    }
+
+    uint64_t b_pieces = getSide(Color::BLACK);
+    while(b_pieces) {
+        uint8_t index = Bits::pop(b_pieces);
+        zobrist_hash ^= Zobrist::piece(getPiece(index), index);
+    }
+
+    if(en_passant_square.getValue() != Square::NONE) {
+        zobrist_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
+    }
+
+    zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+    zobrist_hash ^= Zobrist::side_to_move();
 }
 
 void Board::print() const {

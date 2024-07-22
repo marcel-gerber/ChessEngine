@@ -44,8 +44,12 @@ private:
 
     std::stack<StateInfo> prev_state_infos;
 
+    void initZobrist();
+
 public:
     Board();
+
+    [[nodiscard]] uint64_t getZobrist() const;
 
     [[nodiscard]] Castling* getCastlingRights();
 
