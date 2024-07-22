@@ -114,7 +114,3 @@ bool Piece::operator!=(const Piece &p) const {
     if(piece == NONE) return PieceType::NONE;
     return static_cast<PieceType::Value>((uint8_t) piece % 6);
 }
-
-[[nodiscard]] uint8_t Piece::getValue() const {
-    return static_cast<uint8_t>(piece);
-}
