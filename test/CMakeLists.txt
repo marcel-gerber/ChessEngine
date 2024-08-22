@@ -2,7 +2,7 @@
 enable_testing()
 
 # Add GTest submodule
-add_subdirectory(${PROJECT_SOURCE_DIR}/googletest ${CMAKE_BINARY_DIR}/googletest)
+add_subdirectory(${PROJECT_SOURCE_DIR}/externals/googletest ${CMAKE_BINARY_DIR}/externals/googletest)
 
 # Test files
 file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
