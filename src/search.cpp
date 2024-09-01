@@ -12,7 +12,17 @@
 
 const int INFINITY = 0x7FFFFFFF;
 
-int Search::negamax(Board &board, int depth, int alpha, int beta) {
+Search::Search(Board &board1) : board(board1) {
+
+}
+
+int Search::search(const int &depth) {
+    orig_depth = depth;
+    return negamax(depth, -INFINITY, INFINITY);
+}
+
+int Search::negamax(int depth, int alpha, int beta) {
+    nodes_searched++;
     const uint64_t zobrist_hash = board.getZobrist();
     const int orig_alpha = alpha;
 
@@ -35,27 +45,25 @@ int Search::negamax(Board &board, int depth, int alpha, int beta) {
     }
 
     if(depth == 0) {
-        return Eval::evaluate(board);
+        return quiescence(alpha, beta);
     }
 
     int max_score = -INFINITY;
-    Move best_move = {};
+    Move local_best_move = {};
     std::vector<Move> moves = {};
     MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
 
     for(const Move &move : moves) {
         board.makeMove(move);
-        int score = -negamax(board, depth - 1, -beta, -alpha);
+        int score = -negamax(depth - 1, -beta, -alpha);
         board.unmakeMove(move);
 
         if(score > max_score) {
             max_score = score;
-            best_move = move;
+            local_best_move = move;
         }
 
-        if(max_score > alpha) {
-            alpha = max_score;
-        }
+        alpha = std::max(alpha, max_score);
 
         // Beta-Cutoff
         if(alpha >= beta) {
@@ -63,6 +71,36 @@ int Search::negamax(Board &board, int depth, int alpha, int beta) {
         }
     }
 
-    TT::addEntry(zobrist_hash, best_move, depth, max_score, orig_alpha, beta);
+    if(depth == orig_depth) {
+        best_move = local_best_move;
+    }
+
+    TT::addEntry(zobrist_hash, local_best_move, depth, max_score, orig_alpha, beta);
     return max_score;
+}
+
+int Search::quiescence(int alpha, int beta) {
+    int stand_pat = Eval::evaluate(board);
+    if(stand_pat >= beta) {
+        return beta;
+    }
+
+    alpha = std::max(alpha, stand_pat);
+
+    std::vector<Move> captures = {};
+    MoveGen::legalMoves<MoveGenType::CAPTURE>(board, captures);
+
+    for(const Move &capture : captures) {
+        board.makeMove(capture);
+        int score = -quiescence(-beta, -alpha);
+        board.unmakeMove(capture);
+
+        if(score >= beta) {
+            return beta;
+        }
+
+        alpha = std::max(alpha, score);
+    }
+
+    return alpha;
 }
