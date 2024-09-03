@@ -14,12 +14,6 @@ enum class GameState : uint8_t {
 class Eval {
 
 private:
-    static constexpr uint16_t PAWN_VALUE = 100;
-    static constexpr uint16_t KNIGHT_VALUE = 320;
-    static constexpr uint16_t BISHOP_VALUE = 330;
-    static constexpr uint16_t ROOK_VALUE = 500;
-    static constexpr uint16_t QUEEN_VALUE = 900;
-
     static constexpr int8_t PAWN_POSITIONS[2][64] = {
         {
             0,  0,  0,  0,  0,  0,  0,  0,
@@ -186,6 +180,13 @@ public:
     static int evaluate(const Board &board);
 
     static int evaluate(const Board &board);
+
+    static constexpr uint16_t PAWN_VALUE = 100;
+    static constexpr uint16_t KNIGHT_VALUE = 320;
+    static constexpr uint16_t BISHOP_VALUE = 330;
+    static constexpr uint16_t ROOK_VALUE = 500;
+    static constexpr uint16_t QUEEN_VALUE = 900;
+    static constexpr uint16_t KING_VALUE = 10000;
 
 };
 
