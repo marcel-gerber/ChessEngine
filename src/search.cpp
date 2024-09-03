@@ -12,7 +12,7 @@
 
 const int INFINITY = 0x7FFFFFFF;
 
-Search::Search(Board &board1) : board(board1) {
+Search::Search(Board &board) : board(board) {
 
 }
 
