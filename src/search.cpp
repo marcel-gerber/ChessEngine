@@ -4,6 +4,7 @@
 
 #include "eval.hpp"
 #include "movegen.hpp"
+#include "movepick.hpp"
 #include "search.hpp"
 #include "tt.hpp"
 
@@ -52,6 +53,9 @@ int Search::negamax(int depth, int alpha, int beta) {
     Move local_best_move = {};
     std::vector<Move> moves = {};
     MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
+
+    MovePicker::scoreMoves(board, moves);
+    MovePicker::sortMoves(moves);
 
     for(const Move &move : moves) {
         board.makeMove(move);
