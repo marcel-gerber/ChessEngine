@@ -2,8 +2,8 @@
 // Created by Marcel on 03.09.2024.
 //
 
-#ifndef CHESSENGINE_MOVEORDERER_HPP
-#define CHESSENGINE_MOVEORDERER_HPP
+#ifndef CHESSENGINE_MOVEPICK_HPP
+#define CHESSENGINE_MOVEPICK_HPP
 
 #include "board.hpp"
 #include "eval.hpp"
@@ -12,10 +12,10 @@
 #include <cstdint>
 #include <vector>
 
-class MoveOrderer {
+class MovePicker {
 
 private:
-    static constexpr uint16_t VICTIMS_VALUE[] = {
+    static constexpr int16_t VICTIMS_VALUE[] = {
             Eval::PAWN_VALUE * 10,
             Eval::KNIGHT_VALUE * 10,
             Eval::BISHOP_VALUE * 10,
@@ -23,7 +23,7 @@ private:
             Eval::QUEEN_VALUE * 10
     };
 
-    static constexpr uint16_t ATTACKERS_VALUE[] = {
+    static constexpr int16_t ATTACKERS_VALUE[] = {
             Eval::PAWN_VALUE,
             Eval::KNIGHT_VALUE,
             Eval::BISHOP_VALUE,
@@ -32,8 +32,11 @@ private:
             Eval::KING_VALUE
     };
 
+    static int16_t mvv_lva(const PieceType &pt_victim, const PieceType &pt_attacker);
+
 public:
-    static void scoreMoves(const Board &board, const std::vector<Move> &movelist);
+    static void scoreMoves(const Board &board, std::vector<Move> &movelist);
+    static void sortMoves(std::vector<Move> &movelist);
 
 };
 
