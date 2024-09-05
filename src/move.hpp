@@ -57,8 +57,25 @@ public:
         return (((move >> 12) & 3) + static_cast<uint8_t>(PieceType::KNIGHT));
     }
 
+    [[nodiscard]] constexpr int16_t score() const {
+        return score_;
+    }
+
+    constexpr void setScore(const int16_t &score) {
+        score_ = score;
+    }
+
+    [[nodiscard]] constexpr uint16_t raw() const {
+        return move;
+    }
+
+    constexpr bool operator==(const Move &other) const {
+        return move == other.raw();
+    }
+
 private:
-    uint16_t move;
+    uint16_t move = 0;
+    int16_t score_ = 0;
 };
 
 #endif
