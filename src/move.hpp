@@ -65,6 +65,14 @@ public:
         score_ = score;
     }
 
+    [[nodiscard]] constexpr uint16_t raw() const {
+        return move;
+    }
+
+    constexpr bool operator==(const Move &other) const {
+        return move == other.raw();
+    }
+
 private:
     uint16_t move = 0;
     int16_t score_ = 0;
