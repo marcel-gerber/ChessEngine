@@ -5,9 +5,10 @@
 #ifndef CHESSENGINE_TT_HPP
 #define CHESSENGINE_TT_HPP
 
+#include "move.hpp"
+
 #include <cstdint>
 #include <iostream>
-#include "move.hpp"
 
 enum class NodeType : uint8_t {
     PV_NODE,    // EXACT
@@ -17,7 +18,7 @@ enum class NodeType : uint8_t {
 
 class TT {
 
-private:
+public:
     struct Entry {
         uint64_t zobrist_key;
         Move best_move;
@@ -26,13 +27,14 @@ private:
         NodeType nodeType;
     };
 
-    static inline Entry Table[0xFFFFF] = {};
-
-public:
     static Entry getEntry(const uint64_t &zobrist_key);
 
     static void addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint8_t &depth, const int &eval,
                          const int &alpha, const int &beta);
+
+private:
+    static inline Entry Table[0xFFFFF] = {};
+
 };
 
 #endif
