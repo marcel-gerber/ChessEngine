@@ -54,7 +54,7 @@ int Search::negamax(int depth, int alpha, int beta) {
     std::vector<Move> moves = {};
     MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
 
-    MovePicker::scoreMoves(board, moves);
+    MovePicker::scoreMoves(board, entry, moves);
     MovePicker::sortMoves(moves);
 
     for(const Move &move : moves) {
