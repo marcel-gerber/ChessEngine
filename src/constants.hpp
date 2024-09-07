@@ -4,6 +4,9 @@
 // https://github.com/Disservin/chess-library/blob/master/src/attacks_fwd.hpp
 class Constants {
 public:
+    static constexpr auto START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    static constexpr int STANDARD_DEPTH = 10;
+
     // pre-calculated lookup table for pawn attacks
     static constexpr uint64_t PawnAttacks[2][64] = {
             // white pawn attacks
