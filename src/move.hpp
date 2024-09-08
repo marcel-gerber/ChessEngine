@@ -76,7 +76,14 @@ public:
     }
 
     [[nodiscard]] std::string toUCI() const {
-        return { Square::toString(from_index()) + Square::toString(to_index()) };
+        std::string from = Square::toString(from_index());
+        std::string to = Square::toString(to_index());
+
+        if(type() == MoveType::PROMOTION) {
+            auto piecetype = PieceType(promotion_type());
+            // TODO: implement piecetype.char()
+        }
+        return {from + to};
     }
 
 private:
