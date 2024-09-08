@@ -87,6 +87,18 @@ private:
         return { };
     }
 
+    static std::pair<int, std::string> getIndexAndFen(const std::vector<std::string> &args) {
+        std::string fen = args[1];
+        int index = 2;
+
+        for(; index < args.size(); index++) {
+            if(args[index] == "moves") break;
+            fen.append(" ");
+            fen.append(args[index]);
+        }
+        return {index, fen};
+    }
+
 public:
     UCICommandPosition(Board &b) : board(b) { }
 
@@ -97,10 +109,11 @@ public:
         if(args[0] == "startpos") {
             index = 1;
             board.setFen(Constants::START_POS);
-        } else if(args[0] == "fen" && !args[1].empty()) {
-            // TODO: This is not correct as a FEN string can be longer than 1 argument
-            index = 2;
-            board.setFen(args[1]);
+        } else if(args[0] == "fen") {
+            const auto pair_index_fen = getIndexAndFen(args);
+
+            index = pair_index_fen.first;
+            board.setFen(pair_index_fen.second);
         }
 
         if(args[index] == "moves") {
@@ -113,7 +126,6 @@ public:
                 board.makeMove(move);
                 index++;
             }
-            board.print();
         }
     }
 };
@@ -128,10 +140,8 @@ public:
     UCICommandGo(Board &b) : board(b), search(b) { }
 
     void execute(const std::vector<std::string> &args) override {
-        if(args.empty()) {
-            search.search(Constants::STANDARD_DEPTH);
-            std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
-        }
+        search.search(Constants::STANDARD_DEPTH);
+        std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
     }
 };
 
@@ -176,7 +186,6 @@ public:
             commands[command]->execute(args);
             return;
         }
-        std::cout << "Unknown command: " << command << std::endl;
     }
 };
 
