@@ -140,8 +140,24 @@ public:
     UCICommandGo(Board &b) : board(b), search(b) { }
 
     void execute(const std::vector<std::string> &args) override {
-        search.search(Constants::STANDARD_DEPTH);
-        std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
+        if(args.empty()) {
+            search.search(Constants::STANDARD_DEPTH);
+            std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
+            return;
+        }
+
+        if(args.size() == 1) {
+            if(args[0] == "depth") {
+                int depth = std::stoi(args[1]);
+                search.search(depth);
+                std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
+                return;
+            }
+
+            if(args[0] == "infinite") {
+                // TODO: Implement this with Iterative Deepening
+            }
+        }
     }
 };
 
