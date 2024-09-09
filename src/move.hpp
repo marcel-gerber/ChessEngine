@@ -6,8 +6,10 @@
 #define CHESSENGINE_MOVE_HPP
 
 #include "piece.hpp"
+#include "grid.hpp"
 
 #include <cstdint>
+#include <string>
 
 class MoveType {
 
@@ -71,6 +73,17 @@ public:
 
     constexpr bool operator==(const Move &other) const {
         return move == other.raw();
+    }
+
+    [[nodiscard]] std::string toUCI() const {
+        std::string from = Square::toString(from_index());
+        std::string to = Square::toString(to_index());
+
+        if(type() == MoveType::PROMOTION) {
+            auto piecetype = PieceType(promotion_type());
+            // TODO: implement piecetype.char()
+        }
+        return {from + to};
     }
 
 private:
