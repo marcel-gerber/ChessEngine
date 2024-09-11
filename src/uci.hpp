@@ -6,7 +6,6 @@
 #define CHESSENGINE_UCI_HPP
 
 #include "board.hpp"
-#include "constants.hpp"
 #include "grid.hpp"
 #include "search.hpp"
 
@@ -141,15 +140,15 @@ public:
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
-            search.search(Constants::STANDARD_DEPTH);
+            search.start(Constants::STANDARD_DEPTH);
             std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
             return;
         }
 
-        if(args.size() == 1) {
+        if(args.size() == 2) {
             if(args[0] == "depth") {
                 int depth = std::stoi(args[1]);
-                search.search(depth);
+                search.start(depth);
                 std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
                 return;
             }
