@@ -5,7 +5,8 @@
 class Constants {
 public:
     static constexpr auto START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    static constexpr int STANDARD_DEPTH = 10;
+    static constexpr int STANDARD_DEPTH = 8;
+    static constexpr int MAX_PLY = 20;
 
     // pre-calculated lookup table for pawn attacks
     static constexpr uint64_t PawnAttacks[2][64] = {
