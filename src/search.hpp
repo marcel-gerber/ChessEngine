@@ -26,6 +26,7 @@ private:
     int quiescence(int alpha, int beta);
     int iterativeDeepening(int max_depth);
 
+    void resetData();
     void printInfo(int depth, int seldepth, int score, int nodes, int time);
 
 public:
@@ -39,10 +40,6 @@ public:
 
     [[nodiscard]] int getSearchedNodes() const {
         return nodes_searched;
-    }
-
-    void resetSearchedNodes() {
-        nodes_searched = 0;
     }
 };
 

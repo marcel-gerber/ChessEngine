@@ -25,6 +25,8 @@ int Search::start(const int &depth) {
 
 int Search::negamax(int depth, int alpha, int beta, int ply) {
     nodes_searched++;
+    pv_length[ply] = ply;
+
     const uint64_t zobrist_hash = board.getZobrist();
     const int orig_alpha = alpha;
 
@@ -121,7 +123,7 @@ int Search::quiescence(int alpha, int beta) {
 int Search::iterativeDeepening(int max_depth) {
     int current_score = 0;
 
-    resetSearchedNodes();
+    resetData();
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -137,6 +139,12 @@ int Search::iterativeDeepening(int max_depth) {
     }
 
     return current_score;
+}
+
+void Search::resetData() {
+    nodes_searched = 0;
+    pv.fill({});
+    pv_length.fill({});
 }
 
 void Search::printInfo(int depth, int seldepth, int score, int nodes, int time) {
