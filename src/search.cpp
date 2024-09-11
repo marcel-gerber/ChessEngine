@@ -8,6 +8,7 @@
 #include "search.hpp"
 #include "tt.hpp"
 
+#include <chrono>
 #include <cstdint>
 #include <vector>
 
@@ -17,12 +18,12 @@ Search::Search(Board &board) : board(board) {
 
 }
 
-int Search::search(const int &depth) {
+int Search::start(const int &depth) {
     orig_depth = depth;
-    return negamax(depth, -INFINITY, INFINITY);
+    return iterativeDeepening(depth);
 }
 
-int Search::negamax(int depth, int alpha, int beta) {
+int Search::negamax(int depth, int alpha, int beta, int ply) {
     nodes_searched++;
     const uint64_t zobrist_hash = board.getZobrist();
     const int orig_alpha = alpha;
@@ -59,12 +60,19 @@ int Search::negamax(int depth, int alpha, int beta) {
 
     for(const Move &move : moves) {
         board.makeMove(move);
-        int score = -negamax(depth - 1, -beta, -alpha);
+        int score = -negamax(depth - 1, -beta, -alpha, ply + 1);
         board.unmakeMove(move);
 
         if(score > max_score) {
             max_score = score;
             local_best_move = move;
+
+            // Update PV
+            pv[ply][ply] = move;
+            for(int next_ply = ply + 1; next_ply < pv_length[ply + 1]; next_ply++) {
+                pv[ply][next_ply] = pv[ply + 1][next_ply];
+            }
+            pv_length[ply] = pv_length[ply + 1];
         }
 
         alpha = std::max(alpha, max_score);
@@ -84,6 +92,7 @@ int Search::negamax(int depth, int alpha, int beta) {
 }
 
 int Search::quiescence(int alpha, int beta) {
+    nodes_searched++;
     int stand_pat = Eval::evaluate(board);
     if(stand_pat >= beta) {
         return beta;
@@ -107,4 +116,39 @@ int Search::quiescence(int alpha, int beta) {
     }
 
     return alpha;
+}
+
+int Search::iterativeDeepening(int max_depth) {
+    int current_score = 0;
+
+    resetSearchedNodes();
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    for(int depth = 1; depth <= max_depth; depth++) {
+        int temp_score = negamax(depth, -INFINITY, INFINITY, 0);
+
+        auto current_time = std::chrono::high_resolution_clock::now();
+        int time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+
+        current_score = temp_score;
+
+        printInfo(depth, max_depth, temp_score, getSearchedNodes(), time_spent);
+    }
+
+    return current_score;
+}
+
+void Search::printInfo(int depth, int seldepth, int score, int nodes, int time) {
+    std::cout << "info depth " << depth
+              << " seldepth " << seldepth
+              << " score cp " << score
+              << " nodes " << nodes
+              << " time " << time
+              << " pv ";
+
+    for(int i = 0; i < pv_length[0]; i++) {
+        std::cout << pv[0][i].toUCI() << " ";
+    }
+    std::cout << std::endl;
 }
