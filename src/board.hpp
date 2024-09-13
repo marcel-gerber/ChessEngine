@@ -51,7 +51,7 @@ public:
 
     [[nodiscard]] uint64_t getZobrist() const;
 
-    [[nodiscard]] Castling* getCastlingRights();
+    [[nodiscard]] Castling getCastlingRights() const;
 
     [[nodiscard]] const Square* getEnPassantSquare() const;
 
@@ -86,6 +86,8 @@ public:
     void unmakeMove(const Move &move);
 
     void setFen(const std::string &fen);
+
+    [[nodiscard]] bool isGameOver() const;
 
     void print() const;
 

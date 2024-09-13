@@ -1,6 +1,7 @@
 #include "attacks.hpp"
 #include "utils/bits.hpp"
 #include "board.hpp"
+#include "movegen.hpp"
 #include "zobrist.hpp"
 
 #include <cassert>
@@ -18,8 +19,8 @@ Board::Board() {
     return zobrist_hash;
 }
 
-[[nodiscard]] Castling* Board::getCastlingRights() {
-    return &castling_rights;
+[[nodiscard]] Castling Board::getCastlingRights() const {
+    return castling_rights;
 }
 
 [[nodiscard]] const Square* Board::getEnPassantSquare() const {
@@ -364,6 +365,13 @@ void Board::initZobrist() {
 
     zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
     zobrist_hash ^= Zobrist::side_to_move();
+}
+
+bool Board::isGameOver() const {
+    std::vector<Move> moves;
+    MoveGen::legalMoves<MoveGenType::ALL>(*this, moves);
+
+    return moves.empty();
 }
 
 void Board::print() const {
