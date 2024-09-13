@@ -48,7 +48,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
-    if(depth == 0) {
+    if(depth == 0 || board.isGameOver()) {
         return quiescence(alpha, beta);
     }
 
