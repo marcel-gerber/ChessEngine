@@ -392,16 +392,16 @@ uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_att
 }
 
 template<Color::Value color, MoveGenType moveGenType>
-void MoveGen::generateCastleMoves(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked) {
+void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked) {
     if constexpr(moveGenType == MoveGenType::CAPTURE) return;
 
     const auto castling_rights = board.getCastlingRights();
-    if(castling_rights->hasNoCastling()) return;
+    if(castling_rights.hasNoCastling()) return;
 
     const uint8_t king_index = board.getKingIndex(color);
 
     for(const auto castle : Castling::getCastlings<color>()) {
-        if(!castling_rights->has(castle)) continue;
+        if(!castling_rights.has(castle)) continue;
 
         const uint8_t end_king_index = Castling::getEndingKingIndex(castle);
         const uint8_t start_rook_index = Castling::getStartingRookIndex(castle);
@@ -435,7 +435,7 @@ void MoveGen::generateCastleMoves(Board &board, std::vector<Move> &moves, const 
 }
 
 template<Color::Value color, MoveGenType moveGenType>
-void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
+void MoveGen::legalMoves(const Board &board, std::vector<Move> &moves) {
     uint64_t bb_king = board.getPieces(color, PieceType::KING);
 
     uint64_t bb_occupied = board.getOccupancy();
@@ -503,7 +503,7 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
 }
 
 template<MoveGenType moveGenType>
-void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
+void MoveGen::legalMoves(const Board &board, std::vector<Move> &moves) {
     if(board.getSideToMove() == Color::WHITE) {
         legalMoves<Color::WHITE, moveGenType>(board, moves);
         return;
@@ -512,6 +512,6 @@ void MoveGen::legalMoves(Board &board, std::vector<Move> &moves) {
 }
 
 // Explicit instantiation
-template void MoveGen::legalMoves<MoveGenType::ALL>(Board &board, std::vector<Move> &moves);
-template void MoveGen::legalMoves<MoveGenType::CAPTURE>(Board &board, std::vector<Move> &moves);
-template void MoveGen::legalMoves<MoveGenType::QUIET>(Board &board, std::vector<Move> &moves);
+template void MoveGen::legalMoves<MoveGenType::ALL>(const Board &board, std::vector<Move> &moves);
+template void MoveGen::legalMoves<MoveGenType::CAPTURE>(const Board &board, std::vector<Move> &moves);
+template void MoveGen::legalMoves<MoveGenType::QUIET>(const Board &board, std::vector<Move> &moves);
