@@ -18,9 +18,9 @@ Search::Search(Board &board) : board(board) {
 
 }
 
-int Search::start(const int &depth) {
+void Search::start(const int &depth) {
     orig_depth = depth;
-    return iterativeDeepening(depth);
+    iterativeDeepening(depth);
 }
 
 int Search::negamax(int depth, int alpha, int beta, int ply) {
@@ -120,9 +120,7 @@ int Search::quiescence(int alpha, int beta) {
     return alpha;
 }
 
-int Search::iterativeDeepening(int max_depth) {
-    int current_score = 0;
-
+void Search::iterativeDeepening(int max_depth) {
     resetData();
 
     auto start_time = std::chrono::high_resolution_clock::now();
@@ -133,12 +131,9 @@ int Search::iterativeDeepening(int max_depth) {
         auto current_time = std::chrono::high_resolution_clock::now();
         int time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
 
-        current_score = temp_score;
-
         printInfo(depth, max_depth, temp_score, getSearchedNodes(), time_spent);
     }
-
-    return current_score;
+    std::cout << "bestmove " << best_move.toUCI() << std::endl;
 }
 
 void Search::resetData() {

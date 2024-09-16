@@ -24,7 +24,7 @@ private:
 
     int negamax(int depth, int alpha, int beta, int ply);
     int quiescence(int alpha, int beta);
-    int iterativeDeepening(int max_depth);
+    void iterativeDeepening(int max_depth);
 
     void resetData();
     void printInfo(int depth, int seldepth, int score, int nodes, int time);
@@ -32,7 +32,7 @@ private:
 public:
     explicit Search(Board &board);
 
-    int start(const int &depth);
+    void start(const int &depth);
 
     [[nodiscard]] Move getBestMove() const {
         return best_move;
