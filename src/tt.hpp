@@ -32,6 +32,8 @@ public:
     static void addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint8_t &depth, const int &eval,
                          const int &alpha, const int &beta);
 
+    static void clear();
+
 private:
     static inline Entry Table[0xFFFFF] = {};
 

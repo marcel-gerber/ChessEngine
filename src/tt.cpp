@@ -26,3 +26,7 @@ void TT::addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint
 
     Table[zobrist_key & 0xFFFFF] = entry;
 }
+
+void TT::clear() {
+    std::fill(std::begin(Table), std::end(Table), Entry{});
+}
