@@ -374,6 +374,18 @@ bool Board::isGameOver() const {
     return moves.empty();
 }
 
+void Board::reset() {
+    std::fill(std::begin(bb_pieces), std::end(bb_pieces), 0);
+    std::fill(std::begin(bb_sides), std::end(bb_sides), 0);
+    std::fill(std::begin(pieces), std::end(pieces), Piece::NONE);
+
+    zobrist_hash = 0ULL;
+    castling_rights.reset();
+    en_passant_square = Square::NONE;
+    half_move_clock = 0;
+    side_to_move = Color::WHITE;
+}
+
 void Board::print() const {
     std::stringstream ss;
     uint8_t index = 56;
