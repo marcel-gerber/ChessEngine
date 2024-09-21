@@ -8,6 +8,7 @@
 #include "board.hpp"
 #include "grid.hpp"
 #include "thread.hpp"
+#include "tt.hpp"
 
 #include <iostream>
 #include <memory>
@@ -49,7 +50,8 @@ public:
     UCICommandUCINewGame(Board &b) : board(b) { }
 
     void execute(const std::vector<std::string> &args) override {
-        board = Board();
+        board.reset();
+        TT::clear();
     }
 };
 
