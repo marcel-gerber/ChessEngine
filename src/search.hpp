@@ -6,6 +6,9 @@
 #define CHESSENGINE_SEARCH_HPP
 
 #include "board.hpp"
+#include "constants.hpp"
+
+#include <array>
 
 class Search {
 
@@ -15,13 +18,21 @@ private:
     Move best_move = {};
     int nodes_searched = 0;
 
-    int negamax(int depth, int alpha, int beta);
+    // PV Nodes
+    std::array<std::array<Move, Constants::MAX_PLY>, Constants::MAX_PLY> pv;
+    std::array<int, Constants::MAX_PLY> pv_length;
+
+    int negamax(int depth, int alpha, int beta, int ply);
     int quiescence(int alpha, int beta);
+    void iterativeDeepening(int max_depth);
+
+    void resetData();
+    void printInfo(int depth, int seldepth, int score, int nodes, int time);
 
 public:
     explicit Search(Board &board);
 
-    int search(const int &depth);
+    void start(const int &depth);
 
     [[nodiscard]] Move getBestMove() const {
         return best_move;

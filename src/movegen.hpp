@@ -83,13 +83,13 @@ public:
                                       const uint64_t &bb_movable_squares);
 
     template<Color::Value color, MoveGenType moveGenType>
-    static void generateCastleMoves(Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
+    static void generateCastleMoves(const Board &board, std::vector<Move> &moves, const uint64_t &bb_attacked);
 
     template<Color::Value color, MoveGenType moveGenType>
-    static void legalMoves(Board &board, std::vector<Move> &moves);
+    static void legalMoves(const Board &board, std::vector<Move> &moves);
 
     template<MoveGenType moveGenType>
-    static void legalMoves(Board &board, std::vector<Move> &moves);
+    static void legalMoves(const Board &board, std::vector<Move> &moves);
 
 };
 

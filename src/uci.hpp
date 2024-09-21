@@ -6,9 +6,8 @@
 #define CHESSENGINE_UCI_HPP
 
 #include "board.hpp"
-#include "constants.hpp"
 #include "grid.hpp"
-#include "search.hpp"
+#include "thread.hpp"
 
 #include <iostream>
 #include <memory>
@@ -134,23 +133,21 @@ class UCICommandGo : public UCICommand {
 
 private:
     Board &board;
-    Search search;
+    SearchThread searchThread;
 
 public:
-    UCICommandGo(Board &b) : board(b), search(b) { }
+    UCICommandGo(Board &b) : board(b), searchThread(SearchThread(b)) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
-            search.search(Constants::STANDARD_DEPTH);
-            std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
+            searchThread.start(Constants::STANDARD_DEPTH);
             return;
         }
 
-        if(args.size() == 1) {
+        if(args.size() == 2) {
             if(args[0] == "depth") {
                 int depth = std::stoi(args[1]);
-                search.search(depth);
-                std::cout << "bestmove " << search.getBestMove().toUCI() << std::endl;
+                searchThread.start(depth);
                 return;
             }
 
