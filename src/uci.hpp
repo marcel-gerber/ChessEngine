@@ -64,7 +64,7 @@ private:
 
         const Square from = Square(s_from);
         const Square to = Square(s_to);
-        const auto piece = board.getPiece(to.getIndex());
+        const auto piece = board.getPiece(from.getIndex());
 
         // En Passant Move
         if(piece.getType().getValue() == PieceType::PAWN && to.getIndex() == board.getEnPassantSquare()->getIndex()) {
