@@ -31,6 +31,10 @@ void Castling::unset(const Color color) {
     }
 }
 
+void Castling::reset() {
+    castling_rights =  static_cast<uint8_t>(NO_CASTLING);
+}
+
 [[nodiscard]] bool Castling::has(const Value &castling) const {
     const auto value = static_cast<uint8_t>(castling);
     return (castling_rights & value) == value;
