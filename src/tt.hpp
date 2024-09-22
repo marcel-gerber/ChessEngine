@@ -27,7 +27,7 @@ public:
         NodeType nodeType;
     };
 
-    static Entry getEntry(const uint64_t &zobrist_key);
+    static Entry* getEntry(const uint64_t &zobrist_key);
 
     static void addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint8_t &depth, const int &eval,
                          const int &alpha, const int &beta);
