@@ -36,7 +36,7 @@ private:
     static int16_t mvv_lva(const PieceType &pt_victim, const PieceType &pt_attacker);
 
 public:
-    static void scoreMoves(const Board &board, const TT::Entry &entry, std::vector<Move> &movelist);
+    static void scoreMoves(const Board &board, const TT::Entry* &entry, std::vector<Move> &movelist);
     static void sortMoves(std::vector<Move> &movelist);
 
 };

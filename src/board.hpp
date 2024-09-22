@@ -89,6 +89,8 @@ public:
 
     [[nodiscard]] bool isGameOver() const;
 
+    void reset();
+
     void print() const;
 
 };

@@ -31,19 +31,19 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
     const int orig_alpha = alpha;
 
     // Transposition Table look up
-    auto entry = TT::getEntry(zobrist_hash);
-    if(zobrist_hash == entry.zobrist_key) {
-        if(entry.depth >= depth) {
-            if(entry.nodeType == NodeType::PV_NODE) {
-                return entry.evaluation;
-            } else if(entry.nodeType == NodeType::CUT_NODE) {
-                alpha = std::max(alpha, entry.evaluation);
-            } else if(entry.nodeType == NodeType::ALL_NODE) {
-                beta = std::min(beta, entry.evaluation);
+    const TT::Entry* entry = TT::getEntry(zobrist_hash);
+    if(zobrist_hash == entry->zobrist_key) {
+        if(entry->depth >= depth) {
+            if(entry->nodeType == NodeType::PV_NODE) {
+                return entry->evaluation;
+            } else if(entry->nodeType == NodeType::CUT_NODE) {
+                alpha = std::max(alpha, entry->evaluation);
+            } else if(entry->nodeType == NodeType::ALL_NODE) {
+                beta = std::min(beta, entry->evaluation);
             }
 
             if(alpha >= beta) {
-                return entry.evaluation;
+                return entry->evaluation;
             }
         }
     }

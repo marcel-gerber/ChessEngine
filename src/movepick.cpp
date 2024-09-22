@@ -12,12 +12,12 @@ int16_t MovePicker::mvv_lva(const PieceType &pt_victim, const PieceType &pt_atta
     return VICTIMS_VALUE[pt_victim.getIndex()] - ATTACKERS_VALUE[pt_attacker.getIndex()];
 }
 
-void MovePicker::scoreMoves(const Board &board, const TT::Entry &entry, std::vector<Move> &movelist) {
+void MovePicker::scoreMoves(const Board &board, const TT::Entry* &entry, std::vector<Move> &movelist) {
     Move pv_move = {};
 
     // Check if a move is in Transposition Table
-    if(entry.zobrist_key == board.getZobrist()) {
-        auto it = std::find(movelist.begin(), movelist.end(), entry.best_move);
+    if(entry->zobrist_key == board.getZobrist()) {
+        auto it = std::find(movelist.begin(), movelist.end(), entry->best_move);
 
         if(it != movelist.end()) {
             pv_move = *it;
