@@ -13,6 +13,11 @@
 #include <vector>
 
 const int INFINITY = 0x7FFFFFFF;
+const int VALUE_MATE = 32000;
+
+int mated(const int &ply) {
+    return ply - VALUE_MATE;
+}
 
 Search::Search(Board &board) : board(board) {
 
@@ -26,6 +31,13 @@ void Search::start(const int &depth) {
 int Search::negamax(int depth, int alpha, int beta, int ply) {
     nodes_searched++;
     pv_length[ply] = ply;
+
+    if(board.isRepetition()) return -1;
+
+    const bool is_check = board.isCheck();
+    const GameResult gameResult = board.checkForDraw(is_check);
+
+    if(gameResult != GameResult::NONE) return gameResult == GameResult::LOSS ? mated(ply) : 0;
 
     const uint64_t zobrist_hash = board.getZobrist();
     const int orig_alpha = alpha;
@@ -48,7 +60,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
-    if(depth == 0 || board.isGameOver()) {
+    if(depth == 0) {
         return quiescence(alpha, beta);
     }
 
@@ -56,6 +68,9 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
     Move local_best_move = {};
     std::vector<Move> moves = {};
     MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
+
+    // If there are no legal moves we are either in checkmate or stalemate
+    if(moves.empty()) return is_check ? mated(ply) : 0;
 
     MovePicker::scoreMoves(board, entry, moves);
     MovePicker::sortMoves(moves);

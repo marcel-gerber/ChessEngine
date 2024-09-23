@@ -196,11 +196,16 @@ void Board::makeMove(const Move &move) {
 
     zobrist_hash ^= Zobrist::side_to_move();
     side_to_move = side_to_move.getOppositeColor();
+
+    incrementRepetition(zobrist_hash);
 }
 
 void Board::unmakeMove(const Move &move) {
     const StateInfo prev = prev_state_infos.top();
     prev_state_infos.pop();
+
+    // We need to decrement the repetition value before we get the previous hash
+    decrementRepetition(zobrist_hash);
 
     zobrist_hash = prev.hash;
     castling_rights = prev.castling_rights;
@@ -346,6 +351,41 @@ void Board::setFen(const std::string &fen) {
     initZobrist();
 }
 
+void Board::incrementRepetition(const uint64_t &zobrist_key) {
+    repetition_table[zobrist_key]++;
+}
+
+void Board::decrementRepetition(const uint64_t &zobrist_key) {
+    auto it = repetition_table.find(zobrist_key);
+
+    if(it != repetition_table.end()) {
+        if(it->second > 1) {
+            it->second--;
+            return;
+        }
+        repetition_table.erase(it);
+    }
+}
+
+bool Board::isRepetition() const {
+    auto it = repetition_table.find(zobrist_hash);
+    return it != repetition_table.end() && it->second == 3;
+}
+
+bool Board::isCheck() const {
+    const uint8_t king_index = getKingIndex(side_to_move);
+    const Color opponent = side_to_move.getOppositeColor();
+    const uint64_t occ_bb = getOccupancy();
+    const uint64_t opp_queen = getPieces(opponent, PieceType::QUEEN);
+
+    if(getPieces(opponent, PieceType::PAWN) & Attacks::getPawnAttacks(side_to_move, king_index)) return true;
+    if(getPieces(opponent, PieceType::KNIGHT) & Attacks::getKnightAttacks(king_index)) return true;
+    if((getPieces(opponent, PieceType::BISHOP) | opp_queen) & Attacks::getBishopAttacks(king_index, occ_bb)) return true;
+    if((getPieces(opponent, PieceType::ROOK) | opp_queen) & Attacks::getRookAttacks(king_index, occ_bb)) return true;
+
+    return false;
+}
+
 void Board::initZobrist() {
     uint64_t w_pieces = getSide(Color::WHITE);
     while(w_pieces) {
@@ -367,11 +407,34 @@ void Board::initZobrist() {
     zobrist_hash ^= Zobrist::side_to_move();
 }
 
-bool Board::isGameOver() const {
-    std::vector<Move> moves;
-    MoveGen::legalMoves<MoveGenType::ALL>(*this, moves);
+GameResult Board::checkForDraw(const bool &is_check) const {
+    if(half_move_clock >= 100) {
+        std::vector<Move> moves;
+        MoveGen::legalMoves<MoveGenType::ALL>(*this, moves);
 
-    return moves.empty();
+        if(is_check && moves.empty()) return GameResult::LOSS;
+        return GameResult::DRAW;
+    }
+
+    const uint8_t amount_pieces = Bits::popcount(getOccupancy());
+
+    if(amount_pieces == 2) return GameResult::DRAW;
+
+    // Check for draw by insufficient material
+    if(amount_pieces == 3) {
+        if(getPieces(PieceType::KNIGHT)) return GameResult::DRAW;
+        if(getPieces(PieceType::BISHOP)) return GameResult::DRAW;
+    }
+
+    if(amount_pieces == 4) {
+        if(Bits::popcount(getPieces(Color::WHITE, PieceType::KNIGHT)) == 1 &&
+           Bits::popcount(getPieces(Color::BLACK, PieceType::KNIGHT)) == 1) return GameResult::DRAW;
+
+        if(Bits::popcount(getPieces(Color::WHITE, PieceType::BISHOP)) == 1 &&
+           Bits::popcount(getPieces(Color::BLACK, PieceType::BISHOP)) == 1) return GameResult::DRAW;
+    }
+
+    return GameResult::NONE;
 }
 
 void Board::reset() {
@@ -384,6 +447,8 @@ void Board::reset() {
     en_passant_square = Square::NONE;
     half_move_clock = 0;
     side_to_move = Color::WHITE;
+
+    repetition_table.clear();
 }
 
 void Board::print() const {
