@@ -13,6 +13,14 @@
 
 #include <cstdint>
 #include <stack>
+#include <unordered_map>
+
+enum class GameResult : uint8_t {
+    WIN,
+    LOSS,
+    DRAW,
+    NONE
+};
 
 class Board {
 private:
@@ -43,6 +51,13 @@ private:
     Color side_to_move = Color::WHITE;
 
     std::stack<StateInfo> prev_state_infos;
+
+    // Used to store the zobrist hash and how often this position has occurred
+    std::unordered_map<uint64_t, uint8_t> repetition_table;
+
+    void incrementRepetition(const uint64_t &zobrist_key);
+
+    void decrementRepetition(const uint64_t &zobrist_key);
 
     void initZobrist();
 
@@ -87,7 +102,11 @@ public:
 
     void setFen(const std::string &fen);
 
-    [[nodiscard]] bool isGameOver() const;
+    [[nodiscard]] bool isRepetition() const;
+
+    [[nodiscard]] bool isCheck() const;
+
+    GameResult checkForDraw(const bool &is_check) const;
 
     void reset();
 
