@@ -81,7 +81,7 @@ public:
 
         if(type() == MoveType::PROMOTION) {
             auto piecetype = PieceType(promotion_type());
-            // TODO: implement piecetype.char()
+            return {from + to + piecetype.character()};
         }
         return {from + to};
     }
