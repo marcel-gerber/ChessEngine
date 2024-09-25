@@ -45,6 +45,25 @@ public:
         return getIndex() - pt.getIndex();
     }
 
+    [[nodiscard]] constexpr char character() const {
+        switch(pieceType) {
+            case Value::PAWN:
+                return 'p';
+            case Value::KNIGHT:
+                return 'n';
+            case Value::BISHOP:
+                return 'b';
+            case Value::ROOK:
+                return 'r';
+            case Value::QUEEN:
+                return 'q';
+            case Value::KING:
+                return 'k';
+            default:
+                return ' ';
+        }
+    }
+
     static constexpr Value PAWN = Value::PAWN;
     static constexpr Value KNIGHT = Value::KNIGHT;
     static constexpr Value BISHOP = Value::BISHOP;
