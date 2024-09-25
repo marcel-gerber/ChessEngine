@@ -59,7 +59,7 @@ private:
 
     void decrementRepetition(const uint64_t &zobrist_key);
 
-    void initZobrist();
+    [[nodiscard]] uint64_t calculateZobrist() const;
 
 public:
     Board();
