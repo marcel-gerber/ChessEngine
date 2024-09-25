@@ -348,7 +348,7 @@ void Board::setFen(const std::string &fen) {
             continue;
         }
     }
-    initZobrist();
+    zobrist_hash = calculateZobrist();
 }
 
 void Board::incrementRepetition(const uint64_t &zobrist_key) {
@@ -386,25 +386,31 @@ bool Board::isCheck() const {
     return false;
 }
 
-void Board::initZobrist() {
+uint64_t Board::calculateZobrist() const {
+    uint64_t hash = 0ULL;
+
     uint64_t w_pieces = getSide(Color::WHITE);
     while(w_pieces) {
         uint8_t index = Bits::pop(w_pieces);
-        zobrist_hash ^= Zobrist::piece(getPiece(index), index);
+        hash ^= Zobrist::piece(getPiece(index), index);
     }
 
     uint64_t b_pieces = getSide(Color::BLACK);
     while(b_pieces) {
         uint8_t index = Bits::pop(b_pieces);
-        zobrist_hash ^= Zobrist::piece(getPiece(index), index);
+        hash ^= Zobrist::piece(getPiece(index), index);
     }
+
+    uint64_t ep_hash = 0ULL;
 
     if(en_passant_square.getValue() != Square::NONE) {
-        zobrist_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
+        ep_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
     }
 
-    zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
-    zobrist_hash ^= Zobrist::side_to_move();
+    uint64_t castling_hash = Zobrist::castling(castling_rights.getCastlingRights());
+    uint64_t side_hash = side_to_move == Color::WHITE ? Zobrist::side_to_move() : 0;
+
+    return hash ^ ep_hash ^ castling_hash ^ side_hash;
 }
 
 GameResult Board::checkForDraw(const bool &is_check) const {
