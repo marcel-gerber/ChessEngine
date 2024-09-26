@@ -109,11 +109,13 @@ public:
 
         if(args[0] == "startpos") {
             index = 1;
+            board.reset();
             board.setFen(Constants::START_POS);
         } else if(args[0] == "fen") {
             const auto pair_index_fen = getIndexAndFen(args);
 
             index = pair_index_fen.first;
+            board.reset();
             board.setFen(pair_index_fen.second);
         }
 
