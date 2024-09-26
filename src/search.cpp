@@ -44,7 +44,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
 
     // Transposition Table look up
     const TT::Entry* entry = TT::getEntry(zobrist_hash);
-    if(zobrist_hash == entry->zobrist_key) {
+    if(ply != 0 && zobrist_hash == entry->zobrist_key) {
         if(entry->depth >= depth) {
             if(entry->nodeType == NodeType::PV_NODE) {
                 return entry->evaluation;
@@ -152,6 +152,7 @@ void Search::iterativeDeepening(int max_depth) {
 }
 
 void Search::resetData() {
+    best_move = {};
     nodes_searched = 0;
     pv.fill({});
     pv_length.fill({});
