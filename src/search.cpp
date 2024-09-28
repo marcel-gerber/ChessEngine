@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <iomanip>
 #include <vector>
 
 const int INFINITY = 0x7FFFFFFF;
@@ -24,7 +25,6 @@ Search::Search(Board &board) : board(board) {
 }
 
 void Search::start(const int &depth) {
-    orig_depth = depth;
     iterativeDeepening(depth);
 }
 
@@ -100,10 +100,6 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
-    if(depth == orig_depth) {
-        best_move = local_best_move;
-    }
-
     TT::addEntry(zobrist_hash, local_best_move, depth, max_score, orig_alpha, beta);
     return max_score;
 }
@@ -146,23 +142,25 @@ void Search::iterativeDeepening(int max_depth) {
         auto current_time = std::chrono::high_resolution_clock::now();
         int time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
 
-        printInfo(depth, max_depth, temp_score, getSearchedNodes(), time_spent);
+        printInfo(depth, temp_score, nodes_searched, time_spent);
     }
-    std::cout << "bestmove " << best_move.toUCI() << std::endl;
+    std::cout << "bestmove " << getBestMove().toUCI() << std::endl;
 }
 
 void Search::resetData() {
-    best_move = {};
     nodes_searched = 0;
     pv.fill({});
     pv_length.fill({});
 }
 
-void Search::printInfo(int depth, int seldepth, int score, int nodes, int time) {
-    std::cout << "info depth " << depth
-              << " seldepth " << seldepth
+void Search::printInfo(int depth, int score, int nodes, int time) {
+    time = (time == 0) ? 1 : time;
+
+    std::cout << std::fixed << std::setprecision(0)
+              << "info depth "<< depth
               << " score cp " << score
               << " nodes " << nodes
+              << " nps " << (nodes / ((double) time / 1000))
               << " time " << time
               << " pv ";
 

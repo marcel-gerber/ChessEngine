@@ -14,8 +14,6 @@ class Search {
 
 private:
     Board &board;
-    int orig_depth = 0;
-    Move best_move = {};
     int nodes_searched = 0;
 
     // PV Nodes
@@ -27,7 +25,7 @@ private:
     void iterativeDeepening(int max_depth);
 
     void resetData();
-    void printInfo(int depth, int seldepth, int score, int nodes, int time);
+    void printInfo(int depth, int score, int nodes, int time);
 
 public:
     explicit Search(Board &board);
@@ -35,7 +33,7 @@ public:
     void start(const int &depth);
 
     [[nodiscard]] Move getBestMove() const {
-        return best_move;
+        return pv[0][0];
     }
 
     [[nodiscard]] int getSearchedNodes() const {
