@@ -11,36 +11,27 @@
 #include <memory>
 #include <thread>
 
-class SearchWrapper {
-
-private:
-    std::unique_ptr<Search> search;
-
-public:
-    SearchWrapper(Board &board) {
-        search = std::make_unique<Search>(board);
-    }
-
-    void start(const int depth) const {
-        search->start(depth);
-    }
-
-};
-
 class SearchThread {
 
 private:
-    SearchWrapper searchWrapper;
+    Search search;
     std::thread thread;
 
 public:
-    SearchThread(Board &b) : searchWrapper(SearchWrapper(b)) { }
+    SearchThread(Board &b) : search(Search(b)) { }
 
     void start(const int depth) {
         if(thread.joinable()) {
             thread.join();
         }
-        thread = std::thread(&SearchWrapper::start, &searchWrapper, depth);
+        thread = std::thread(&Search::start, &search, depth);
+    }
+
+    void stop() {
+        if(thread.joinable()) {
+            search.stop();
+            thread.join();
+        }
     }
 
 };
