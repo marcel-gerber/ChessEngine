@@ -143,20 +143,18 @@ public:
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
-            search_thread.start(Constants::STANDARD_DEPTH);
+            search_thread.start(Constants::MAX_PLY);
             return;
         }
 
-        if(args.size() == 1) {
-            if(args[0] == "infinite") {
+        for(int index = 0; index < args.size(); index++) {
+            if(args[index] == "infinite") {
                 search_thread.start(Constants::MAX_PLY);
                 return;
             }
-        }
 
-        if(args.size() == 2) {
-            if(args[0] == "depth") {
-                int depth = std::stoi(args[1]);
+            if(args[index] == "depth") {
+                int depth = std::stoi(args[index + 1]);
                 search_thread.start(depth);
                 return;
             }
