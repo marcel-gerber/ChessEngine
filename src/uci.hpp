@@ -136,16 +136,20 @@ public:
 class UCICommandGo : public UCICommand {
 
 private:
+    Board &board;
     SearchThread &search_thread;
 
 public:
-    UCICommandGo(SearchThread &st) : search_thread(st) { }
+    UCICommandGo(Board &b, SearchThread &st) : board(b), search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
             search_thread.start(Constants::MAX_PLY);
             return;
         }
+
+        const std::string time_str = board.getSideToMove() == Color::WHITE ? "wtime" : "btime";
+        const std::string inc_str = board.getSideToMove() == Color::WHITE ? "winc" : "binc";
 
         for(int index = 0; index < args.size(); index++) {
             if(args[index] == "infinite") {
@@ -157,6 +161,24 @@ public:
                 int depth = std::stoi(args[index + 1]);
                 search_thread.start(depth);
                 return;
+            }
+
+            if(args[index] == time_str) {
+                int time = std::stoi(args[index + 1]);
+                search_thread.getSearch()->getTimeManager()->time = time;
+                continue;
+            }
+
+            if(args[index] == inc_str) {
+                int inc = std::stoi(args[index + 1]);
+                search_thread.getSearch()->getTimeManager()->increment = inc;
+                continue;
+            }
+
+            if(args[index] == "movestogo") {
+                int moves_to_go = std::stoi(args[index + 1]);
+                search_thread.getSearch()->getTimeManager()->moves_to_go = moves_to_go;
+                continue;
             }
         }
     }
@@ -214,7 +236,7 @@ public:
         commands["isready"] = std::make_unique<UCICommandIsReady>();
         commands["ucinewgame"] = std::make_unique<UCICommandUCINewGame>(board);
         commands["position"] = std::make_unique<UCICommandPosition>(board);
-        commands["go"] = std::make_unique<UCICommandGo>(searchThread);
+        commands["go"] = std::make_unique<UCICommandGo>(board, searchThread);
         commands["stop"] = std::make_unique<UCICommandStop>(searchThread);
     }
 
