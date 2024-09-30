@@ -136,29 +136,44 @@ public:
 class UCICommandGo : public UCICommand {
 
 private:
-    Board &board;
-    SearchThread searchThread;
+    SearchThread &search_thread;
 
 public:
-    UCICommandGo(Board &b) : board(b), searchThread(SearchThread(b)) { }
+    UCICommandGo(SearchThread &st) : search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
-            searchThread.start(Constants::STANDARD_DEPTH);
+            search_thread.start(Constants::STANDARD_DEPTH);
             return;
+        }
+
+        if(args.size() == 1) {
+            if(args[0] == "infinite") {
+                search_thread.start(Constants::MAX_PLY);
+                return;
+            }
         }
 
         if(args.size() == 2) {
             if(args[0] == "depth") {
                 int depth = std::stoi(args[1]);
-                searchThread.start(depth);
+                search_thread.start(depth);
                 return;
             }
-
-            if(args[0] == "infinite") {
-                // TODO: Implement this with Iterative Deepening
-            }
         }
+    }
+};
+
+class UCICommandStop : public UCICommand {
+
+private:
+    SearchThread &search_thread;
+
+public:
+    UCICommandStop(SearchThread &st) : search_thread(st) { }
+
+    void execute(const std::vector<std::string> &args) override {
+        search_thread.stop();
     }
 };
 
@@ -166,6 +181,7 @@ class UCIHandler {
 
 private:
     std::unordered_map<std::string, std::unique_ptr<UCICommand>> commands;
+    SearchThread searchThread;
     Board board;
 
     static std::pair<std::string, std::vector<std::string>> split(const std::string &input) {
@@ -183,17 +199,6 @@ private:
         return {command, arguments};
     }
 
-public:
-    UCIHandler() {
-        board = Board();
-
-        commands["uci"] = std::make_unique<UCICommandUCI>();
-        commands["isready"] = std::make_unique<UCICommandIsReady>();
-        commands["ucinewgame"] = std::make_unique<UCICommandUCINewGame>(board);
-        commands["position"] = std::make_unique<UCICommandPosition>(board);
-        commands["go"] = std::make_unique<UCICommandGo>(board);
-    }
-
     void handleCommand(const std::string &input) {
         const auto split_pair = split(input);
         const auto &command = split_pair.first;
@@ -202,6 +207,29 @@ public:
         if(commands.find(command) != commands.end()) {
             commands[command]->execute(args);
             return;
+        }
+    }
+
+public:
+    UCIHandler() : board(Board()), searchThread(SearchThread(board)) {
+        commands["uci"] = std::make_unique<UCICommandUCI>();
+        commands["isready"] = std::make_unique<UCICommandIsReady>();
+        commands["ucinewgame"] = std::make_unique<UCICommandUCINewGame>(board);
+        commands["position"] = std::make_unique<UCICommandPosition>(board);
+        commands["go"] = std::make_unique<UCICommandGo>(searchThread);
+        commands["stop"] = std::make_unique<UCICommandStop>(searchThread);
+    }
+
+    void inputLoop() {
+        std::string input;
+
+        while(std::getline(std::cin, input)) {
+            if(input == "quit") {
+                searchThread.stop();
+                return;
+            }
+
+            handleCommand(input);
         }
     }
 };
