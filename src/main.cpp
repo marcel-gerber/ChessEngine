@@ -7,13 +7,7 @@ int main() {
     MoveGen::initSquaresBetween();
 
     UCIHandler uciHandler;
-    std::string input;
-
-    while(std::getline(std::cin, input)) {
-        if(input == "quit") break;
-
-        uciHandler.handleCommand(input);
-    }
+    uciHandler.inputLoop();
 
     return 0;
 }

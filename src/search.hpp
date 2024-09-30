@@ -9,37 +9,37 @@
 #include "constants.hpp"
 
 #include <array>
+#include <atomic>
 
 class Search {
 
 private:
     Board &board;
-    int orig_depth = 0;
-    Move best_move = {};
     int nodes_searched = 0;
 
     // PV Nodes
     std::array<std::array<Move, Constants::MAX_PLY>, Constants::MAX_PLY> pv;
     std::array<int, Constants::MAX_PLY> pv_length;
 
+    // Stop flag for search thread
+    std::atomic<bool> stop_flag;
+
     int negamax(int depth, int alpha, int beta, int ply);
     int quiescence(int alpha, int beta);
     void iterativeDeepening(int max_depth);
 
     void resetData();
-    void printInfo(int depth, int seldepth, int score, int nodes, int time);
+    void printInfo(int depth, int score, int nodes, int time);
 
 public:
     explicit Search(Board &board);
 
     void start(const int &depth);
 
-    [[nodiscard]] Move getBestMove() const {
-        return best_move;
-    }
+    void stop();
 
-    [[nodiscard]] int getSearchedNodes() const {
-        return nodes_searched;
+    [[nodiscard]] Move getBestMove() const {
+        return pv[0][0];
     }
 };
 
