@@ -20,12 +20,17 @@ int mated(const int &ply) {
     return ply - VALUE_MATE;
 }
 
-Search::Search(Board &board) : board(board) {
+Search::Search(Board &board) : board(board), stop_flag(false) {
 
 }
 
 void Search::start(const int &depth) {
+    stop_flag = false;
     iterativeDeepening(depth);
+}
+
+void Search::stop() {
+    stop_flag = true;
 }
 
 int Search::negamax(int depth, int alpha, int beta, int ply) {
@@ -136,7 +141,7 @@ void Search::iterativeDeepening(int max_depth) {
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    for(int depth = 1; depth <= max_depth; depth++) {
+    for(int depth = 1; depth <= max_depth && !stop_flag; depth++) {
         int temp_score = negamax(depth, -INFINITY, INFINITY, 0);
 
         auto current_time = std::chrono::high_resolution_clock::now();

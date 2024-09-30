@@ -9,6 +9,7 @@
 #include "constants.hpp"
 
 #include <array>
+#include <atomic>
 
 class Search {
 
@@ -19,6 +20,9 @@ private:
     // PV Nodes
     std::array<std::array<Move, Constants::MAX_PLY>, Constants::MAX_PLY> pv;
     std::array<int, Constants::MAX_PLY> pv_length;
+
+    // Stop flag for search thread
+    std::atomic<bool> stop_flag;
 
     int negamax(int depth, int alpha, int beta, int ply);
     int quiescence(int alpha, int beta);
@@ -32,12 +36,10 @@ public:
 
     void start(const int &depth);
 
+    void stop();
+
     [[nodiscard]] Move getBestMove() const {
         return pv[0][0];
-    }
-
-    [[nodiscard]] int getSearchedNodes() const {
-        return nodes_searched;
     }
 };
 
