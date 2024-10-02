@@ -181,6 +181,7 @@ public:
                 continue;
             }
         }
+        search_thread.start(Constants::MAX_PLY);
     }
 };
 
