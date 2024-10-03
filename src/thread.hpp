@@ -34,6 +34,10 @@ public:
         }
     }
 
+    Search* getSearch() {
+        return &search;
+    }
+
 };
 
 #endif
