@@ -161,18 +161,25 @@ void Search::iterativeDeepening(int max_depth) {
 
     thinking_time = time_manager.getTimeForMove();
     start_time = std::chrono::high_resolution_clock::now();
+    Move best_move = {};
 
     for(int depth = 1; depth <= max_depth && !stop_flag; depth++) {
         int temp_score = negamax(depth, -INFINITY, INFINITY, 0);
+
+        // If the time is up we break. We only want to update the best move after a complete search.
+        // If a search was incomplete, we also don't want to print the info since it could contain illegal pv moves.
+        if(isTimeUp()) break;
+
+        best_move = pv[0][0];
 
         auto current_time = std::chrono::high_resolution_clock::now();
         uint64_t time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
 
         printInfo(depth, temp_score, nodes_searched, time_spent);
-
-        if(isTimeUp()) break;
     }
-    std::cout << "bestmove " << getBestMove().toUCI() << std::endl;
+
+    if(best_move.raw() == 0) best_move = pv[0][0];
+    std::cout << "bestmove " << best_move.toUCI() << std::endl;
 }
 
 bool Search::isTimeUp() const {
