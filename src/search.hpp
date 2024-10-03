@@ -55,10 +55,6 @@ public:
 
     void stop();
 
-    [[nodiscard]] Move getBestMove() const {
-        return pv[0][0];
-    }
-
     TimeManager* getTimeManager() {
         return &time_manager;
     }
