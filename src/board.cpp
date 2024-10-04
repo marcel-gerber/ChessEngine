@@ -12,26 +12,6 @@ Board::Board() {
     castling_rights = Castling();
 }
 
-[[nodiscard]] uint64_t Board::getZobrist() const {
-    return zobrist_hash;
-}
-
-[[nodiscard]] Castling Board::getCastlingRights() const {
-    return castling_rights;
-}
-
-[[nodiscard]] const Square* Board::getEnPassantSquare() const {
-    return &en_passant_square;
-}
-
-[[nodiscard]] Color Board::getSideToMove() const {
-    return side_to_move;
-}
-
-[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
-    return half_move_clock;
-}
-
 void Board::placePiece(const Piece &piece, const uint8_t &index) {
     Bits::set(bb_pieces[piece.getType().getIndex()], index);
     Bits::set(bb_sides[piece.getColor().value()], index);
@@ -440,6 +420,26 @@ void Board::reset() {
     side_to_move = Color::WHITE;
 
     repetition_table.clear();
+}
+
+[[nodiscard]] uint64_t Board::getZobrist() const {
+    return zobrist_hash;
+}
+
+[[nodiscard]] Castling Board::getCastlingRights() const {
+    return castling_rights;
+}
+
+[[nodiscard]] const Square* Board::getEnPassantSquare() const {
+    return &en_passant_square;
+}
+
+[[nodiscard]] Color Board::getSideToMove() const {
+    return side_to_move;
+}
+
+[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
+    return half_move_clock;
 }
 
 void Board::print() const {

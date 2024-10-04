@@ -68,16 +68,6 @@ private:
 public:
     Board();
 
-    [[nodiscard]] uint64_t getZobrist() const;
-
-    [[nodiscard]] Castling getCastlingRights() const;
-
-    [[nodiscard]] const Square* getEnPassantSquare() const;
-
-    [[nodiscard]] Color getSideToMove() const;
-
-    [[nodiscard]] uint8_t getHalfMoveClock() const;
-
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const;
 
     [[nodiscard]] uint64_t getPieces(const PieceType &pieceType) const;
@@ -103,6 +93,16 @@ public:
     GameResult checkForDraw(const bool &is_check) const;
 
     void reset();
+
+    [[nodiscard]] uint64_t getZobrist() const;
+
+    [[nodiscard]] Castling getCastlingRights() const;
+
+    [[nodiscard]] const Square* getEnPassantSquare() const;
+
+    [[nodiscard]] Color getSideToMove() const;
+
+    [[nodiscard]] uint8_t getHalfMoveClock() const;
 
     void print() const;
 
