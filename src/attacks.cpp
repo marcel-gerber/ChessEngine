@@ -2,81 +2,41 @@
 #include "utils/bits.hpp"
 #include "constants.hpp"
 
-uint64_t Attacks::calculateRookAttacks(Square &square, uint64_t occupied) {
+void Attacks::ray(const Square &square, const Direction::Value &direction, uint64_t &attacks_bb, const uint64_t &occupied) {
+    const int8_t direction_value = Direction::toValue(direction);
+    uint8_t prev_file_index = square.getFileIndex();
+    Square next = Square(square.getIndex() + direction_value);
+
+    while(next.isValid()) {
+        if(std::abs(prev_file_index - next.getFileIndex()) > 1) return;
+
+        attacks_bb |= 1ULL << next.getIndex();
+        if(Bits::isSet(occupied, next.getIndex())) return;
+
+        prev_file_index = next.getFileIndex();
+        next = Square(next.getIndex() + direction_value);
+    }
+}
+
+uint64_t Attacks::calculateRook(Square &square, uint64_t occupied) {
     uint64_t attacks = 0ULL;
-    Square current{};
 
-    // North-Direction
-    current = Square(square.getIndex() + 8);
-    while(current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() + 8);
-    }
-
-    // East-Direction
-    current = Square(square.getIndex() + 1);
-    while(current.getFileIndex() != 0 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() + 1);
-    }
-
-    // South-Direction
-    current = Square(square.getIndex() - 8);
-    while(current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() - 8);
-    }
-
-    // West-Direction
-    current = Square(square.getIndex() - 1);
-    while(current.getFileIndex() != 7 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() - 1);
-    }
+    ray(square, Direction::NORTH, attacks, occupied);
+    ray(square, Direction::EAST, attacks, occupied);
+    ray(square, Direction::SOUTH, attacks, occupied);
+    ray(square, Direction::WEST, attacks, occupied);
 
     return attacks;
 }
 
 /// Function used for initializing Magic Table
-uint64_t Attacks::calculateBishopAttacks(Square &square, uint64_t occupied) {
+uint64_t Attacks::calculateBishop(Square &square, uint64_t occupied) {
     uint64_t attacks = 0ULL;
-    Square current{};
 
-    // North-East-Direction
-    current = Square(square.getIndex() + 9);
-    while(current.getFileIndex() != 0 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() + 9);
-    }
-
-    // South-East-Direction
-    current = Square(square.getIndex() - 7);
-    while(current.getFileIndex() != 0 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() - 7);
-    }
-
-    // South-West-Direction
-    current = Square(square.getIndex() - 9);
-    while(current.getFileIndex() != 7 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() - 9);
-    }
-
-    // North-West-Direction
-    current = Square(square.getIndex() + 7);
-    while(current.getFileIndex() != 7 && current.isValid()) {
-        attacks |= 1ULL << current.getIndex();
-        if(Bits::isSet(occupied, current.getIndex())) break;
-        current = Square(current.getIndex() + 7);
-    }
+    ray(square, Direction::NORTH_EAST, attacks, occupied);
+    ray(square, Direction::SOUTH_EAST, attacks, occupied);
+    ray(square, Direction::SOUTH_WEST, attacks, occupied);
+    ray(square, Direction::NORTH_WEST, attacks, occupied);
 
     return attacks;
 }
@@ -89,7 +49,7 @@ void Attacks::initMagic(PieceType &&pieceType, Square &&square, Magic table[], u
     entry->magic = magic;
 
     uint64_t mask = (pieceType.getValue() == PieceType::ROOK
-                     ? calculateRookAttacks(square, 0ULL) : calculateBishopAttacks(square, 0ULL));
+                     ? calculateRook(square, 0ULL) : calculateBishop(square, 0ULL));
     mask &= ~edges;
 
     entry->mask = mask;
@@ -113,41 +73,41 @@ void Attacks::initMagic(PieceType &&pieceType, Square &&square, Magic table[], u
         }
         // calculate attack with 'blocker' mask and add it to the 'attacks' magic table at the 'magic index'
         entry->attacks[table[square.getIndex()].getIndex(blocker)] = (pieceType.getValue() == PieceType::ROOK
-                                                                      ? calculateRookAttacks(square, blocker) : calculateBishopAttacks(square, blocker));
+                                                                      ? calculateRook(square, blocker) : calculateBishop(square, blocker));
         blocker = 0ULL;
     }
 }
 
-uint64_t Attacks::getPawnRightAttacks(const uint64_t &bb_pawns, const Color &color) {
+uint64_t Attacks::pawnRight(const uint64_t &bb_pawns, const Color &color) {
     return color == Color::WHITE ? (bb_pawns << 9 & ~File::FILE_ABB) : (bb_pawns >> 9 & ~File::FILE_HBB);
 }
 
-uint64_t Attacks::getPawnLeftAttacks(const uint64_t &bb_pawns, const Color &color) {
+uint64_t Attacks::pawnLeft(const uint64_t &bb_pawns, const Color &color) {
     return color == Color::WHITE ? (bb_pawns << 7 & ~File::FILE_HBB) : (bb_pawns >> 7 & ~File::FILE_ABB);
 }
 
-uint64_t Attacks::getPawnAttacks(const Color &color, const uint8_t &index) {
-    return Constants::PawnAttacks[color.getValue()][index];
+uint64_t Attacks::pawn(const Color &color, const uint8_t &index) {
+    return Constants::PawnAttacks[color.value()][index];
 }
 
-uint64_t Attacks::getKnightAttacks(const uint8_t &index) {
+uint64_t Attacks::knight(const uint8_t &index) {
     return Constants::KnightAttacks[index];
 }
 
-uint64_t Attacks::getKingAttacks(const uint8_t &index) {
+uint64_t Attacks::king(const uint8_t &index) {
     return Constants::KingAttacks[index];
 }
 
-uint64_t Attacks::getRookAttacks(const uint8_t &index, const uint64_t &occupied) {
+uint64_t Attacks::rook(const uint8_t &index, const uint64_t &occupied) {
     return RookTable[index].attacks[RookTable[index].getIndex(occupied)];
 }
 
-uint64_t Attacks::getBishopAttacks(const uint8_t &index, const uint64_t &occupied) {
+uint64_t Attacks::bishop(const uint8_t &index, const uint64_t &occupied) {
     return BishopTable[index].attacks[BishopTable[index].getIndex(occupied)];
 }
 
-uint64_t Attacks::getQueenAttacks(const uint8_t &index, const uint64_t &occupied) {
-    return getRookAttacks(index, occupied) | getBishopAttacks(index, occupied);
+uint64_t Attacks::queen(const uint8_t &index, const uint64_t &occupied) {
+    return rook(index, occupied) | bishop(index, occupied);
 }
 
 void Attacks::initMagics() {

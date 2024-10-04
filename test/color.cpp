@@ -18,8 +18,8 @@ protected:
 };
 
 TEST_F(ColorTest, GetOppositeColor) {
-    ASSERT_EQ(color_w.getOppositeColor(), Color::BLACK);
-    ASSERT_EQ(color_b.getOppositeColor(), Color::WHITE);
+    ASSERT_EQ(color_w.opposite(), Color::BLACK);
+    ASSERT_EQ(color_b.opposite(), Color::WHITE);
 }
 
 TEST_F(ColorTest, Opposite) {
@@ -28,9 +28,9 @@ TEST_F(ColorTest, Opposite) {
 }
 
 TEST_F(ColorTest, GetValue) {
-    ASSERT_EQ(color_w.getValue(), 0);
-    ASSERT_EQ(color_b.getValue(), 1);
-    ASSERT_EQ(color_none.getValue(), 2);
+    ASSERT_EQ(color_w.value(), 0);
+    ASSERT_EQ(color_b.value(), 1);
+    ASSERT_EQ(color_none.value(), 2);
 }
 
 TEST_F(ColorTest, EqualityOperator) {

@@ -222,4 +222,34 @@ private:
     Value square;
 };
 
+class Direction {
+public:
+    enum class Value : int8_t {
+        NORTH = 8,
+        EAST = 1,
+        SOUTH = -8,
+        WEST = -1,
+        NORTH_EAST = 9,
+        SOUTH_EAST = -7,
+        SOUTH_WEST = -9,
+        NORTH_WEST = 7,
+        NONE = 0
+    };
+
+    static constexpr int8_t toValue(const Value &value) {
+        return static_cast<int8_t>(value);
+    }
+
+    static constexpr Value NORTH = Value::NORTH;
+    static constexpr Value EAST = Value::EAST;
+    static constexpr Value SOUTH = Value::SOUTH;
+    static constexpr Value WEST = Value::WEST;
+    static constexpr Value NORTH_EAST = Value::NORTH_EAST;
+    static constexpr Value SOUTH_EAST = Value::SOUTH_EAST;
+    static constexpr Value SOUTH_WEST = Value::SOUTH_WEST;
+    static constexpr Value NORTH_WEST = Value::NORTH_WEST;
+    static constexpr Value NONE = Value::NONE;
+
+};
+
 #endif

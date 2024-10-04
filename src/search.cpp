@@ -38,9 +38,7 @@ int TimeManager::getTimeForMove() const {
     return time_for_move;
 }
 
-Search::Search(Board &board) : board(board), stop_flag(false) {
-
-}
+Search::Search(Board &board) : board(board), stop_flag(false) { }
 
 void Search::start(const int &depth) {
     stop_flag = false;
@@ -69,25 +67,21 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
 
     // Transposition Table look up
     const TT::Entry* entry = TT::getEntry(zobrist_hash);
-    if(ply != 0 && zobrist_hash == entry->zobrist_key) {
+    if(ply != 0 && entry->zobrist_key == zobrist_hash) {
         if(entry->depth >= depth) {
-            if(entry->nodeType == NodeType::PV_NODE) {
+            if(entry->flag == Flag::EXACT) {
                 return entry->evaluation;
-            } else if(entry->nodeType == NodeType::CUT_NODE) {
+            } else if(entry->flag == Flag::LOWER_BOUND) {
                 alpha = std::max(alpha, entry->evaluation);
-            } else if(entry->nodeType == NodeType::ALL_NODE) {
+            } else if(entry->flag == Flag::UPPER_BOUND) {
                 beta = std::min(beta, entry->evaluation);
             }
 
-            if(alpha >= beta) {
-                return entry->evaluation;
-            }
+            if(alpha >= beta) return entry->evaluation;
         }
     }
 
-    if(depth == 0) {
-        return quiescence(alpha, beta);
-    }
+    if(depth == 0) return quiescence(alpha, beta);
 
     int max_score = -INFINITY;
     Move local_best_move = {};

@@ -1,8 +1,6 @@
 #include "piece.hpp"
 
-Piece::Piece(Piece::Value piece) : piece(piece) {
-
-}
+Piece::Piece(Piece::Value piece) : piece(piece) { }
 
 Piece::Piece(const char &c) : piece(Value::NONE) {
     switch(c) {
@@ -59,7 +57,7 @@ Piece::Piece(PieceType type, Color color) {
         return;
     }
 
-    piece = static_cast<Value>(color.getValue() * 6 + type.getIndex());
+    piece = static_cast<Value>(color.value() * 6 + type.getIndex());
 }
 
 bool Piece::operator!=(const Piece &p) const {

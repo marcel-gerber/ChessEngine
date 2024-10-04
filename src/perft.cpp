@@ -6,17 +6,13 @@
 #include <iostream>
 #include <vector>
 
-Perft::Perft(Board &board) : board(board) {
-
-}
+Perft::Perft(Board &board) : board(board) { }
 
 [[nodiscard]] uint64_t Perft::perft(int depth) const {
     std::vector<Move> moves;
     MoveGen::legalMoves<MoveGenType::ALL>(board, moves);
 
-    if(depth == 1) {
-        return moves.size();
-    }
+    if(depth == 1) return moves.size();
 
     uint64_t nodes = 0ULL;
 

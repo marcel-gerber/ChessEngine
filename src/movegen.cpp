@@ -14,8 +14,7 @@ void MoveGen::initSquaresBetween() {
 
             if(square1.getFileIndex() == square2.getFileIndex() || square1.getRankIndex() == square2.getRankIndex()) {
 
-                attacks = Attacks::getRookAttacks(square1.getIndex(), squares_bb)
-                          & Attacks::getRookAttacks(square2.getIndex(), squares_bb);
+                attacks = Attacks::rook(square1.getIndex(), squares_bb) & Attacks::rook(square2.getIndex(), squares_bb);
                 SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
 
                 continue;
@@ -24,8 +23,7 @@ void MoveGen::initSquaresBetween() {
             if(square1.getDiagonalIndex() == square2.getDiagonalIndex()
                || square1.getAntiDiagonalIndex() == square2.getAntiDiagonalIndex()) {
 
-                attacks = Attacks::getBishopAttacks(square1.getIndex(), squares_bb)
-                          & Attacks::getBishopAttacks(square2.getIndex(), squares_bb);
+                attacks = Attacks::bishop(square1.getIndex(), squares_bb) & Attacks::bishop(square2.getIndex(), squares_bb);
                 SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
 
                 continue;
@@ -43,7 +41,7 @@ uint64_t MoveGen::pinMaskHV(const Board &board) {
     const uint64_t opp_rook = board.getPieces(Color::opposite<color>(), PieceType::ROOK);
     const uint64_t opp_queen = board.getPieces(Color::opposite<color>(), PieceType::QUEEN);
 
-    uint64_t rook_attacks = Attacks::getRookAttacks(king_index, bb_opp) & (opp_rook | opp_queen);
+    uint64_t rook_attacks = Attacks::rook(king_index, bb_opp) & (opp_rook | opp_queen);
     uint64_t pin_hv = 0ULL;
 
     while(rook_attacks) {
@@ -66,7 +64,7 @@ uint64_t MoveGen::pinMaskDiagonal(const Board &board) {
     const uint64_t opp_bishop = board.getPieces(Color::opposite<color>(), PieceType::BISHOP);
     const uint64_t opp_queen = board.getPieces(Color::opposite<color>(), PieceType::QUEEN);
 
-    uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, bb_opp) & (opp_bishop | opp_queen);
+    uint64_t bishop_attacks = Attacks::bishop(king_index, bb_opp) & (opp_bishop | opp_queen);
     uint64_t pin_d = 0ULL;
 
     while(bishop_attacks) {
@@ -92,25 +90,25 @@ uint64_t MoveGen::attackedSquares(const Board &board) {
     uint64_t bishops = board.getPieces(color, PieceType::BISHOP) | queens;
     uint64_t rooks = board.getPieces(color, PieceType::ROOK) | queens;
 
-    uint64_t attacked = Attacks::getPawnLeftAttacks(pawns, color) | Attacks::getPawnRightAttacks(pawns, color);
+    uint64_t attacked = Attacks::pawnLeft(pawns, color) | Attacks::pawnRight(pawns, color);
 
     while(knights) {
         const uint8_t index = Bits::pop(knights);
-        attacked |= Attacks::getKnightAttacks(index);
+        attacked |= Attacks::knight(index);
     }
 
     while(bishops) {
         const uint8_t index = Bits::pop(bishops);
-        attacked |= Attacks::getBishopAttacks(index, occupied);
+        attacked |= Attacks::bishop(index, occupied);
     }
 
     while(rooks) {
         const uint8_t index = Bits::pop(rooks);
-        attacked |= Attacks::getRookAttacks(index, occupied);
+        attacked |= Attacks::rook(index, occupied);
     }
 
     const uint8_t king_index = board.getKingIndex(color);
-    attacked |= Attacks::getKingAttacks(king_index);
+    attacked |= Attacks::king(king_index);
 
     return attacked;
 }
@@ -129,7 +127,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     const uint64_t opp_rooks = board.getPieces(opp_color, PieceType::ROOK) | opp_queen;
 
     // knight checks
-    uint64_t knight_attacks = Attacks::getKnightAttacks(king_index) & opp_knights;
+    uint64_t knight_attacks = Attacks::knight(king_index) & opp_knights;
     double_check += bool(knight_attacks);
 
     // initializing check_mask
@@ -137,12 +135,12 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
 
     // pawn checks
     // Important note: using color and not opponent color here!
-    uint64_t pawn_attacks = Attacks::getPawnAttacks(color, king_index) & opp_pawns;
+    uint64_t pawn_attacks = Attacks::pawn(color, king_index) & opp_pawns;
     double_check += bool(pawn_attacks);
     check_mask |= pawn_attacks;
 
     // bishop checks
-    uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, board.getOccupancy()) & opp_bishops;
+    uint64_t bishop_attacks = Attacks::bishop(king_index, board.getOccupancy()) & opp_bishops;
 
     if(bishop_attacks) {
         const uint8_t index = Bits::lsb(bishop_attacks);
@@ -151,7 +149,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     }
 
     // rook checks
-    uint64_t rook_attacks = Attacks::getRookAttacks(king_index, board.getOccupancy()) & opp_rooks;
+    uint64_t rook_attacks = Attacks::rook(king_index, board.getOccupancy()) & opp_rooks;
 
     if(rook_attacks) {
         if(Bits::popcount(rook_attacks) > 1) {
@@ -170,7 +168,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     return {check_mask, double_check};
 }
 
-void MoveGen::getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
+void MoveGen::promotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
     const uint8_t from_index = target_index + direction;
 
     moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::KNIGHT));
@@ -217,7 +215,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         const uint8_t target_index = Bits::pop(single_push_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN);
+            promotionMoves(moves, target_index, DOWN);
             continue;
         }
 
@@ -250,14 +248,14 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     }
 
     // these pawns can take left and right as they are not pinned
-    uint64_t pawns_left_unpinned = Attacks::getPawnLeftAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
-    uint64_t pawns_right_unpinned = Attacks::getPawnRightAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
+    uint64_t pawns_left_unpinned = Attacks::pawnLeft(pawns_not_pinned, color) & bb_opp & checkmask;
+    uint64_t pawns_right_unpinned = Attacks::pawnRight(pawns_not_pinned, color) & bb_opp & checkmask;
 
     while(moveGenType != MoveGenType::QUIET && pawns_left_unpinned) {
         const uint8_t target_index = Bits::pop(pawns_left_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_RIGHT);
+            promotionMoves(moves, target_index, DOWN_RIGHT);
             continue;
         }
 
@@ -268,7 +266,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         const uint8_t target_index = Bits::pop(pawns_right_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_LEFT);
+            promotionMoves(moves, target_index, DOWN_LEFT);
             continue;
         }
 
@@ -276,8 +274,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     }
 
     // these pawns need special check as they are diagonally pinned
-    uint64_t pawns_left_pinned = Attacks::getPawnLeftAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
-    uint64_t pawns_right_pinned = Attacks::getPawnRightAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+    uint64_t pawns_left_pinned = Attacks::pawnLeft(pawns_pinned_d, color) & bb_opp & checkmask;
+    uint64_t pawns_right_pinned = Attacks::pawnRight(pawns_pinned_d, color) & bb_opp & checkmask;
 
     while(moveGenType != MoveGenType::QUIET && pawns_left_pinned) {
         const uint8_t target_index = Bits::pop(pawns_left_pinned);
@@ -286,7 +284,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if(!(target_sq_bb & pin_d)) continue;
 
         if(target_sq_bb & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_RIGHT);
+            promotionMoves(moves, target_index, DOWN_RIGHT);
             continue;
         }
 
@@ -300,7 +298,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if(!(target_sq_bb & pin_d)) continue;
 
         if(target_sq_bb & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_LEFT);
+            promotionMoves(moves, target_index, DOWN_LEFT);
             continue;
         }
 
@@ -322,7 +320,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if((checkmask & (Square::toBitboard(en_passant_index) | Square::toBitboard(ep_pawn_capture))) == 0ULL) return;
 
         // possible en passant pawns
-        uint64_t ep_pawns_bb = Attacks::getPawnAttacks(Color::opposite<color>(), en_passant_index) & pawns_not_pinned_hv;
+        uint64_t ep_pawns_bb = Attacks::pawn(Color::opposite<color>(), en_passant_index) & pawns_not_pinned_hv;
 
         // we need to know where our king and opponent sliders are to check
         // whether our king is in check after en passant
@@ -342,8 +340,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
             uint64_t mask = ep_mask & ~Square::toBitboard(from);
             mask |= Square::toBitboard(en_passant_index);
 
-            const uint64_t rook_attacks = Attacks::getRookAttacks(king_index, mask);
-            const uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, mask);
+            const uint64_t rook_attacks = Attacks::rook(king_index, mask);
+            const uint64_t bishop_attacks = Attacks::bishop(king_index, mask);
 
             if(((rook_attacks & opp_rooks) | (bishop_attacks & opp_bishops)) != 0ULL) continue;
 
@@ -353,23 +351,23 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
 }
 
 uint64_t MoveGen::generateKnightMoves(const uint8_t &index) {
-    return Attacks::getKnightAttacks(index);
+    return Attacks::knight(index);
 }
 
 uint64_t MoveGen::generateBishopMoves(const uint8_t &index, const uint64_t &pin_d, const uint64_t &bb_occupied) {
     // If the bishop is pinned diagonally, it can only move on this diagonal
     if(pin_d & Square::toBitboard(index)) {
-        return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        return Attacks::bishop(index, bb_occupied) & pin_d;
     }
-    return Attacks::getBishopAttacks(index, bb_occupied);
+    return Attacks::bishop(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateRookMoves(const uint8_t &index, const uint64_t &pin_hv, const uint64_t &bb_occupied) {
     // If the rook is pinned horizontally or vertically, it can only move horizontal/vertical
     if(pin_hv & Square::toBitboard(index)) {
-        return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        return Attacks::rook(index, bb_occupied) & pin_hv;
     }
-    return Attacks::getRookAttacks(index, bb_occupied);
+    return Attacks::rook(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateQueenMoves(const uint8_t &index, const uint64_t &pin_hv, const uint64_t &pin_d,
@@ -377,18 +375,18 @@ uint64_t MoveGen::generateQueenMoves(const uint8_t &index, const uint64_t &pin_h
     uint64_t bb_square = Square::toBitboard(index);
 
     if(pin_hv & bb_square) {
-        return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        return Attacks::rook(index, bb_occupied) & pin_hv;
     }
 
     if(pin_d & bb_square) {
-        return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        return Attacks::bishop(index, bb_occupied) & pin_d;
     }
 
-    return Attacks::getQueenAttacks(index, bb_occupied);
+    return Attacks::queen(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked, const uint64_t &bb_movable_squares) {
-    return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
+    return Attacks::king(index) & bb_movable_squares & ~bb_attacked;
 }
 
 template<Color::Value color, MoveGenType moveGenType>

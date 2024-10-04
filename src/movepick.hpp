@@ -33,7 +33,7 @@ private:
             Eval::KING_VALUE
     };
 
-    static int16_t mvv_lva(const PieceType &pt_victim, const PieceType &pt_attacker);
+    static int16_t mvvLva(const PieceType &pt_victim, const PieceType &pt_attacker);
 
 public:
     static void scoreMoves(const Board &board, const TT::Entry* &entry, std::vector<Move> &movelist);

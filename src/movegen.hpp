@@ -64,7 +64,7 @@ public:
     template<Color::Value color>
     static std::tuple<uint64_t, uint8_t> checkMask(const Board &board);
 
-    static void getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction);
+    static void promotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction);
 
     template<Color::Value color, MoveGenType moveGenType>
     static void generatePawnMoves(const Board &board, std::vector<Move> &moves, const uint64_t &pin_hv,

@@ -17,7 +17,7 @@ void Castling::unset(const Value &castling) {
 }
 
 void Castling::unset(const Color color) {
-    switch(color.getValue()) {
+    switch(color.value()) {
         case static_cast<uint8_t>(Color::WHITE):
             unset(WHITE_00);
             unset(WHITE_000);
@@ -41,7 +41,7 @@ void Castling::reset() {
 }
 
 [[nodiscard]] bool Castling::has(const Color color) const {
-    switch(color.getValue()) {
+    switch(color.value()) {
         case static_cast<uint8_t>(Color::WHITE):
             return has(WHITE_00) || has(WHITE_000);
         case static_cast<uint8_t>(Color::BLACK):

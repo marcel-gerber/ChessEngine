@@ -11,22 +11,22 @@ TT::Entry* TT::getEntry(const uint64_t &zobrist_key) {
 void TT::addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint8_t &depth, const int &eval,
                      const int &alpha, const int &beta) {
     Entry* entry = getEntry(zobrist_key);
-    NodeType nodeType;
+    Flag flag;
 
     if(eval <= alpha) {
-        nodeType = NodeType::ALL_NODE;
+        flag = Flag::UPPER_BOUND;
     } else if(eval >= beta) {
-        nodeType = NodeType::CUT_NODE;
+        flag = Flag::LOWER_BOUND;
     } else {
-        nodeType = NodeType::PV_NODE;
+        flag = Flag::EXACT;
     }
 
-    if(entry->zobrist_key != zobrist_key || nodeType == NodeType::PV_NODE) {
+    if(entry->zobrist_key != zobrist_key || flag == Flag::EXACT) {
         entry->zobrist_key = zobrist_key;
         entry->best_move = best_move;
         entry->depth = depth;
         entry->evaluation = eval;
-        entry->nodeType = nodeType;
+        entry->flag = flag;
     }
 }
 

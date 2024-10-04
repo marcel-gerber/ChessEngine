@@ -55,6 +55,10 @@ private:
     // Used to store the zobrist hash and how often this position has occurred
     std::unordered_map<uint64_t, uint8_t> repetition_table;
 
+    void placePiece(const Piece &piece, const uint8_t &index);
+
+    void removePiece(const Piece &piece, const uint8_t &index);
+
     void incrementRepetition(const uint64_t &zobrist_key);
 
     void decrementRepetition(const uint64_t &zobrist_key);
@@ -70,19 +74,9 @@ public:
 
     [[nodiscard]] const Square* getEnPassantSquare() const;
 
-    void setEnPassantSquare(Square square);
-
     [[nodiscard]] Color getSideToMove() const;
 
-    void setSideToMove(Color color);
-
     [[nodiscard]] uint8_t getHalfMoveClock() const;
-
-    void setHalfMoveClock(const uint8_t &half_move);
-
-    void placePiece(const Piece &piece, const uint8_t &index);
-
-    void removePiece(const Piece &piece, const uint8_t &index);
 
     [[nodiscard]] uint64_t getPieces(const Color &color, const PieceType &pieceType) const;
 

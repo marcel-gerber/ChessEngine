@@ -24,9 +24,7 @@ public:
 
     PieceType() = default;
 
-    constexpr PieceType(Value pieceType) : pieceType(pieceType) {
-
-    }
+    constexpr PieceType(Value pieceType) : pieceType(pieceType) { }
 
     constexpr explicit PieceType(const uint8_t &type) {
         pieceType = static_cast<Value>(type);
