@@ -9,7 +9,7 @@
 constexpr int16_t BEST_SCORE = 10000;
 
 int16_t MovePicker::mvvLva(const PieceType &pt_victim, const PieceType &pt_attacker) {
-    return VICTIMS_VALUE[pt_victim.getIndex()] - ATTACKERS_VALUE[pt_attacker.getIndex()];
+    return VICTIMS_VALUE[pt_victim.index()] - ATTACKERS_VALUE[pt_attacker.index()];
 }
 
 void MovePicker::scoreMoves(const Board &board, const TT::Entry* &entry, std::vector<Move> &movelist) {
@@ -32,11 +32,11 @@ void MovePicker::scoreMoves(const Board &board, const TT::Entry* &entry, std::ve
         }
 
         // MVV - LVA
-        PieceType pt_to = board.getPiece(move.toIndex()).getType();
+        PieceType pt_to = board.getPiece(move.toIndex()).type();
 
-        if(pt_to.getValue() == PieceType::NONE) continue;
+        if(pt_to.value() == PieceType::NONE) continue;
 
-        PieceType pt_from = board.getPiece(move.fromIndex()).getType();
+        PieceType pt_from = board.getPiece(move.fromIndex()).type();
 
         move.setScore(mvvLva(pt_to, pt_from));
     }

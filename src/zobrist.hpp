@@ -235,7 +235,7 @@ private:
 
 public:
     static constexpr uint64_t piece(const Piece &piece, const uint8_t &index) {
-        return Pieces[64 * piece.getValue() + index];
+        return Pieces[64 * piece.index() + index];
     }
 
     static constexpr uint64_t enPassant(const uint8_t &index) {

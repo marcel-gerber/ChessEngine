@@ -31,7 +31,8 @@ public:
     static inline uint64_t RookAttacks[0x19000] = {};
     static inline uint64_t BishopAttacks[0x1480] = {};
 
-    static void ray(const Square &square, const Direction::Value &direction, uint64_t &attacks_bb, const uint64_t &occupied);
+    static void addRay(const Square &square, const Direction::Value &direction,
+                       uint64_t &attacks_bb, const uint64_t &occupied);
 
     /// Function used for initializing Magic Table
     static uint64_t calculateRook(Square &square, uint64_t occupied);

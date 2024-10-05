@@ -4,7 +4,7 @@ Castling::Castling() {
     castling_rights =  static_cast<uint8_t>(NO_CASTLING);
 }
 
-[[nodiscard]] uint8_t Castling::getCastlingRights() const {
+[[nodiscard]] uint8_t Castling::raw() const {
     return castling_rights;
 }
 

@@ -19,19 +19,19 @@ protected:
 TEST(CastlingTestInit, Set) {
     Castling castling;
 
-    ASSERT_EQ(castling.getCastlingRights(), 0);
+    ASSERT_EQ(castling.raw(), 0);
 
     castling.set(Castling::WHITE_00);
-    ASSERT_EQ(castling.getCastlingRights(), 1);
+    ASSERT_EQ(castling.raw(), 1);
 
     castling.set(Castling::WHITE_000);
-    ASSERT_EQ(castling.getCastlingRights(), 3);
+    ASSERT_EQ(castling.raw(), 3);
 
     castling.set(Castling::BLACK_00);
-    ASSERT_EQ(castling.getCastlingRights(), 7);
+    ASSERT_EQ(castling.raw(), 7);
 
     castling.set(Castling::BLACK_000);
-    ASSERT_EQ(castling.getCastlingRights(), 15);
+    ASSERT_EQ(castling.raw(), 15);
 }
 
 TEST_F(CastlingTest, Has) {
@@ -48,22 +48,22 @@ TEST_F(CastlingTest, Has) {
 
 TEST_F(CastlingTest, Unset) {
     castling.unset(Castling::WHITE_00);
-    ASSERT_EQ(castling.getCastlingRights(), 14);
+    ASSERT_EQ(castling.raw(), 14);
 
     castling.unset(Castling::WHITE_000);
-    ASSERT_EQ(castling.getCastlingRights(), 12);
+    ASSERT_EQ(castling.raw(), 12);
 
     castling.unset(Castling::BLACK_00);
-    ASSERT_EQ(castling.getCastlingRights(), 8);
+    ASSERT_EQ(castling.raw(), 8);
 
     castling.unset(Castling::BLACK_000);
-    ASSERT_EQ(castling.getCastlingRights(), 0);
+    ASSERT_EQ(castling.raw(), 0);
 }
 
 TEST_F(CastlingTest, UnsetColor) {
     castling.unset(Color::WHITE);
-    ASSERT_EQ(castling.getCastlingRights(), 12);
+    ASSERT_EQ(castling.raw(), 12);
 
     castling.unset(Color::BLACK);
-    ASSERT_EQ(castling.getCastlingRights(), 0);
+    ASSERT_EQ(castling.raw(), 0);
 }

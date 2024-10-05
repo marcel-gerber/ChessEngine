@@ -30,17 +30,17 @@ public:
         pieceType = static_cast<Value>(type);
     }
 
-    [[nodiscard]] constexpr uint8_t getIndex() const {
+    [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(pieceType);
     }
 
-    [[nodiscard]] constexpr Value getValue() const {
+    [[nodiscard]] constexpr Value value() const {
         return pieceType;
     }
 
     // used for Move::create
     constexpr uint16_t operator-(const PieceType &pt) const {
-        return getIndex() - pt.getIndex();
+        return index() - pt.index();
     }
 
     [[nodiscard]] constexpr char character() const {
@@ -103,15 +103,15 @@ public:
 
     bool operator!=(const Piece &p) const;
 
-    [[nodiscard]] Color getColor() const;
-
-    [[nodiscard]] char getCharacter() const;
-
-    [[nodiscard]] PieceType getType() const;
-
-    [[nodiscard]] constexpr uint8_t getValue() const {
+    [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(piece);
     }
+
+    [[nodiscard]] Color color() const;
+
+    [[nodiscard]] char character() const;
+
+    [[nodiscard]] PieceType type() const;
 
     static constexpr Value WHITE_PAWN = Value::WHITE_PAWN;
     static constexpr Value WHITE_KNIGHT = Value::WHITE_KNIGHT;

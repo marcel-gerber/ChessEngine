@@ -8,23 +8,23 @@ void MoveGen::initSquaresBetween() {
 
     for(Square square1 = 0; square1 < 64; square1++) {
         for(Square square2 = 0; square2 < 64; square2++) {
-            if(square1.getIndex() == square2.getIndex()) continue;
+            if(square1.index() == square2.index()) continue;
 
-            squares_bb = (1ULL << square1.getIndex()) | (1ULL << square2.getIndex());
+            squares_bb = (1ULL << square1.index()) | (1ULL << square2.index());
 
-            if(square1.getFileIndex() == square2.getFileIndex() || square1.getRankIndex() == square2.getRankIndex()) {
+            if(square1.fileIndex() == square2.fileIndex() || square1.rankIndex() == square2.rankIndex()) {
 
-                attacks = Attacks::rook(square1.getIndex(), squares_bb) & Attacks::rook(square2.getIndex(), squares_bb);
-                SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
+                attacks = Attacks::rook(square1.index(), squares_bb) & Attacks::rook(square2.index(), squares_bb);
+                SQUARES_BETWEEN[square1.index()][square2.index()] = attacks;
 
                 continue;
             }
 
-            if(square1.getDiagonalIndex() == square2.getDiagonalIndex()
-               || square1.getAntiDiagonalIndex() == square2.getAntiDiagonalIndex()) {
+            if(square1.diagonalIndex() == square2.diagonalIndex()
+               || square1.antiDiagonalIndex() == square2.antiDiagonalIndex()) {
 
-                attacks = Attacks::bishop(square1.getIndex(), squares_bb) & Attacks::bishop(square2.getIndex(), squares_bb);
-                SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
+                attacks = Attacks::bishop(square1.index(), squares_bb) & Attacks::bishop(square2.index(), squares_bb);
+                SQUARES_BETWEEN[square1.index()][square2.index()] = attacks;
 
                 continue;
             }
@@ -185,8 +185,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
     const int8_t DOWN_RIGHT = color == Color::WHITE ? -7 : 7;
 
-    const uint64_t RANK_PROMO = Rank::getPromoRank<color>();
-    const uint64_t DOUBLE_PUSH_RANK = Rank::getDoublePushRank<color>();
+    const uint64_t RANK_PROMO = Rank::promotion<color>();
+    const uint64_t DOUBLE_PUSH_RANK = Rank::doublePush<color>();
 
     const uint64_t bb_empty = ~board.getOccupancy();
     const uint64_t bb_opp = board.getSide(Color::opposite<color>());
@@ -310,8 +310,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     // En Passant
     const Square* en_passant = board.getEnPassantSquare();
 
-    if(en_passant->getValue() != Square::NONE) {
-        const uint8_t en_passant_index = en_passant->getIndex();
+    if(en_passant->value() != Square::NONE) {
+        const uint8_t en_passant_index = en_passant->index();
 
         const uint8_t ep_pawn_capture = en_passant_index + DOWN;
 
@@ -401,14 +401,14 @@ void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, 
     for(const auto castle : Castling::getCastlings<color>()) {
         if(!castling_rights.has(castle)) continue;
 
-        const uint8_t end_king_index = Castling::getEndingKingIndex(castle);
-        const uint8_t start_rook_index = Castling::getStartingRookIndex(castle);
+        const uint8_t king_to_index = Castling::kingTargetIndex(castle);
+        const uint8_t rook_from_index = Castling::rookSourceIndex(castle);
 
         // Squares that have to be empty
-        const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][start_rook_index];
+        const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][rook_from_index];
 
         // Squares that are not allowed to be attacked by the enemy
-        const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][end_king_index] | Square::toBitboard(end_king_index);
+        const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][king_to_index] | Square::toBitboard(king_to_index);
 
         // Bitboard with all empty squares and squares that are not attacked by the enemy
         const uint64_t empty_not_attacked = ~board.getOccupancy() & ~bb_attacked;
@@ -428,7 +428,7 @@ void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, 
             continue;
         }
 
-        moves.push_back(Move::create<MoveType::CASTLING>(king_index, end_king_index));
+        moves.push_back(Move::create<MoveType::CASTLING>(king_index, king_to_index));
     }
 }
 
