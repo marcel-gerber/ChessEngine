@@ -18,7 +18,7 @@ private:
     std::thread thread;
 
 public:
-    SearchThread(Board &b) : search(Search(b)) { }
+    explicit SearchThread(Board &b) : search(Search(b)) { }
 
     void start(const int depth) {
         if(thread.joinable()) {

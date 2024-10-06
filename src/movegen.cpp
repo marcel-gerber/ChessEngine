@@ -8,25 +8,23 @@ void MoveGen::initSquaresBetween() {
 
     for(Square square1 = 0; square1 < 64; square1++) {
         for(Square square2 = 0; square2 < 64; square2++) {
-            if(square1.getIndex() == square2.getIndex()) continue;
+            if(square1.index() == square2.index()) continue;
 
-            squares_bb = (1ULL << square1.getIndex()) | (1ULL << square2.getIndex());
+            squares_bb = (1ULL << square1.index()) | (1ULL << square2.index());
 
-            if(square1.getFileIndex() == square2.getFileIndex() || square1.getRankIndex() == square2.getRankIndex()) {
+            if(square1.fileIndex() == square2.fileIndex() || square1.rankIndex() == square2.rankIndex()) {
 
-                attacks = Attacks::getRookAttacks(square1.getIndex(), squares_bb)
-                          & Attacks::getRookAttacks(square2.getIndex(), squares_bb);
-                SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
+                attacks = Attacks::rook(square1.index(), squares_bb) & Attacks::rook(square2.index(), squares_bb);
+                SQUARES_BETWEEN[square1.index()][square2.index()] = attacks;
 
                 continue;
             }
 
-            if(square1.getDiagonalIndex() == square2.getDiagonalIndex()
-               || square1.getAntiDiagonalIndex() == square2.getAntiDiagonalIndex()) {
+            if(square1.diagonalIndex() == square2.diagonalIndex()
+               || square1.antiDiagonalIndex() == square2.antiDiagonalIndex()) {
 
-                attacks = Attacks::getBishopAttacks(square1.getIndex(), squares_bb)
-                          & Attacks::getBishopAttacks(square2.getIndex(), squares_bb);
-                SQUARES_BETWEEN[square1.getIndex()][square2.getIndex()] = attacks;
+                attacks = Attacks::bishop(square1.index(), squares_bb) & Attacks::bishop(square2.index(), squares_bb);
+                SQUARES_BETWEEN[square1.index()][square2.index()] = attacks;
 
                 continue;
             }
@@ -43,7 +41,7 @@ uint64_t MoveGen::pinMaskHV(const Board &board) {
     const uint64_t opp_rook = board.getPieces(Color::opposite<color>(), PieceType::ROOK);
     const uint64_t opp_queen = board.getPieces(Color::opposite<color>(), PieceType::QUEEN);
 
-    uint64_t rook_attacks = Attacks::getRookAttacks(king_index, bb_opp) & (opp_rook | opp_queen);
+    uint64_t rook_attacks = Attacks::rook(king_index, bb_opp) & (opp_rook | opp_queen);
     uint64_t pin_hv = 0ULL;
 
     while(rook_attacks) {
@@ -66,7 +64,7 @@ uint64_t MoveGen::pinMaskDiagonal(const Board &board) {
     const uint64_t opp_bishop = board.getPieces(Color::opposite<color>(), PieceType::BISHOP);
     const uint64_t opp_queen = board.getPieces(Color::opposite<color>(), PieceType::QUEEN);
 
-    uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, bb_opp) & (opp_bishop | opp_queen);
+    uint64_t bishop_attacks = Attacks::bishop(king_index, bb_opp) & (opp_bishop | opp_queen);
     uint64_t pin_d = 0ULL;
 
     while(bishop_attacks) {
@@ -92,25 +90,25 @@ uint64_t MoveGen::attackedSquares(const Board &board) {
     uint64_t bishops = board.getPieces(color, PieceType::BISHOP) | queens;
     uint64_t rooks = board.getPieces(color, PieceType::ROOK) | queens;
 
-    uint64_t attacked = Attacks::getPawnLeftAttacks(pawns, color) | Attacks::getPawnRightAttacks(pawns, color);
+    uint64_t attacked = Attacks::pawnLeft(pawns, color) | Attacks::pawnRight(pawns, color);
 
     while(knights) {
         const uint8_t index = Bits::pop(knights);
-        attacked |= Attacks::getKnightAttacks(index);
+        attacked |= Attacks::knight(index);
     }
 
     while(bishops) {
         const uint8_t index = Bits::pop(bishops);
-        attacked |= Attacks::getBishopAttacks(index, occupied);
+        attacked |= Attacks::bishop(index, occupied);
     }
 
     while(rooks) {
         const uint8_t index = Bits::pop(rooks);
-        attacked |= Attacks::getRookAttacks(index, occupied);
+        attacked |= Attacks::rook(index, occupied);
     }
 
     const uint8_t king_index = board.getKingIndex(color);
-    attacked |= Attacks::getKingAttacks(king_index);
+    attacked |= Attacks::king(king_index);
 
     return attacked;
 }
@@ -129,7 +127,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     const uint64_t opp_rooks = board.getPieces(opp_color, PieceType::ROOK) | opp_queen;
 
     // knight checks
-    uint64_t knight_attacks = Attacks::getKnightAttacks(king_index) & opp_knights;
+    uint64_t knight_attacks = Attacks::knight(king_index) & opp_knights;
     double_check += bool(knight_attacks);
 
     // initializing check_mask
@@ -137,12 +135,12 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
 
     // pawn checks
     // Important note: using color and not opponent color here!
-    uint64_t pawn_attacks = Attacks::getPawnAttacks(color, king_index) & opp_pawns;
+    uint64_t pawn_attacks = Attacks::pawn(color, king_index) & opp_pawns;
     double_check += bool(pawn_attacks);
     check_mask |= pawn_attacks;
 
     // bishop checks
-    uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, board.getOccupancy()) & opp_bishops;
+    uint64_t bishop_attacks = Attacks::bishop(king_index, board.getOccupancy()) & opp_bishops;
 
     if(bishop_attacks) {
         const uint8_t index = Bits::lsb(bishop_attacks);
@@ -151,7 +149,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     }
 
     // rook checks
-    uint64_t rook_attacks = Attacks::getRookAttacks(king_index, board.getOccupancy()) & opp_rooks;
+    uint64_t rook_attacks = Attacks::rook(king_index, board.getOccupancy()) & opp_rooks;
 
     if(rook_attacks) {
         if(Bits::popcount(rook_attacks) > 1) {
@@ -170,7 +168,7 @@ std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     return {check_mask, double_check};
 }
 
-void MoveGen::getPromotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
+void MoveGen::promotionMoves(std::vector<Move> &moves, const uint8_t &target_index, const int8_t &direction) {
     const uint8_t from_index = target_index + direction;
 
     moves.push_back(Move::create<MoveType::PROMOTION>(from_index, target_index, PieceType::KNIGHT));
@@ -187,8 +185,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     const int8_t DOWN_LEFT = color == Color::WHITE ? -9 : 9;
     const int8_t DOWN_RIGHT = color == Color::WHITE ? -7 : 7;
 
-    const uint64_t RANK_PROMO = Rank::getPromoRank<color>();
-    const uint64_t DOUBLE_PUSH_RANK = Rank::getDoublePushRank<color>();
+    const uint64_t RANK_PROMO = Rank::promotion<color>();
+    const uint64_t DOUBLE_PUSH_RANK = Rank::doublePush<color>();
 
     const uint64_t bb_empty = ~board.getOccupancy();
     const uint64_t bb_opp = board.getSide(Color::opposite<color>());
@@ -217,7 +215,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         const uint8_t target_index = Bits::pop(single_push_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN);
+            promotionMoves(moves, target_index, DOWN);
             continue;
         }
 
@@ -250,14 +248,14 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     }
 
     // these pawns can take left and right as they are not pinned
-    uint64_t pawns_left_unpinned = Attacks::getPawnLeftAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
-    uint64_t pawns_right_unpinned = Attacks::getPawnRightAttacks(pawns_not_pinned, color) & bb_opp & checkmask;
+    uint64_t pawns_left_unpinned = Attacks::pawnLeft(pawns_not_pinned, color) & bb_opp & checkmask;
+    uint64_t pawns_right_unpinned = Attacks::pawnRight(pawns_not_pinned, color) & bb_opp & checkmask;
 
     while(moveGenType != MoveGenType::QUIET && pawns_left_unpinned) {
         const uint8_t target_index = Bits::pop(pawns_left_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_RIGHT);
+            promotionMoves(moves, target_index, DOWN_RIGHT);
             continue;
         }
 
@@ -268,7 +266,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         const uint8_t target_index = Bits::pop(pawns_right_unpinned);
 
         if(Square::toBitboard(target_index) & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_LEFT);
+            promotionMoves(moves, target_index, DOWN_LEFT);
             continue;
         }
 
@@ -276,8 +274,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     }
 
     // these pawns need special check as they are diagonally pinned
-    uint64_t pawns_left_pinned = Attacks::getPawnLeftAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
-    uint64_t pawns_right_pinned = Attacks::getPawnRightAttacks(pawns_pinned_d, color) & bb_opp & checkmask;
+    uint64_t pawns_left_pinned = Attacks::pawnLeft(pawns_pinned_d, color) & bb_opp & checkmask;
+    uint64_t pawns_right_pinned = Attacks::pawnRight(pawns_pinned_d, color) & bb_opp & checkmask;
 
     while(moveGenType != MoveGenType::QUIET && pawns_left_pinned) {
         const uint8_t target_index = Bits::pop(pawns_left_pinned);
@@ -286,7 +284,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if(!(target_sq_bb & pin_d)) continue;
 
         if(target_sq_bb & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_RIGHT);
+            promotionMoves(moves, target_index, DOWN_RIGHT);
             continue;
         }
 
@@ -300,7 +298,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if(!(target_sq_bb & pin_d)) continue;
 
         if(target_sq_bb & RANK_PROMO) {
-            getPromotionMoves(moves, target_index, DOWN_LEFT);
+            promotionMoves(moves, target_index, DOWN_LEFT);
             continue;
         }
 
@@ -312,8 +310,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
     // En Passant
     const Square* en_passant = board.getEnPassantSquare();
 
-    if(en_passant->getValue() != Square::NONE) {
-        const uint8_t en_passant_index = en_passant->getIndex();
+    if(en_passant->value() != Square::NONE) {
+        const uint8_t en_passant_index = en_passant->index();
 
         const uint8_t ep_pawn_capture = en_passant_index + DOWN;
 
@@ -322,7 +320,7 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
         if((checkmask & (Square::toBitboard(en_passant_index) | Square::toBitboard(ep_pawn_capture))) == 0ULL) return;
 
         // possible en passant pawns
-        uint64_t ep_pawns_bb = Attacks::getPawnAttacks(Color::opposite<color>(), en_passant_index) & pawns_not_pinned_hv;
+        uint64_t ep_pawns_bb = Attacks::pawn(Color::opposite<color>(), en_passant_index) & pawns_not_pinned_hv;
 
         // we need to know where our king and opponent sliders are to check
         // whether our king is in check after en passant
@@ -342,8 +340,8 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
             uint64_t mask = ep_mask & ~Square::toBitboard(from);
             mask |= Square::toBitboard(en_passant_index);
 
-            const uint64_t rook_attacks = Attacks::getRookAttacks(king_index, mask);
-            const uint64_t bishop_attacks = Attacks::getBishopAttacks(king_index, mask);
+            const uint64_t rook_attacks = Attacks::rook(king_index, mask);
+            const uint64_t bishop_attacks = Attacks::bishop(king_index, mask);
 
             if(((rook_attacks & opp_rooks) | (bishop_attacks & opp_bishops)) != 0ULL) continue;
 
@@ -353,23 +351,23 @@ void MoveGen::generatePawnMoves(const Board &board, std::vector<Move> &moves, co
 }
 
 uint64_t MoveGen::generateKnightMoves(const uint8_t &index) {
-    return Attacks::getKnightAttacks(index);
+    return Attacks::knight(index);
 }
 
 uint64_t MoveGen::generateBishopMoves(const uint8_t &index, const uint64_t &pin_d, const uint64_t &bb_occupied) {
     // If the bishop is pinned diagonally, it can only move on this diagonal
     if(pin_d & Square::toBitboard(index)) {
-        return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        return Attacks::bishop(index, bb_occupied) & pin_d;
     }
-    return Attacks::getBishopAttacks(index, bb_occupied);
+    return Attacks::bishop(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateRookMoves(const uint8_t &index, const uint64_t &pin_hv, const uint64_t &bb_occupied) {
     // If the rook is pinned horizontally or vertically, it can only move horizontal/vertical
     if(pin_hv & Square::toBitboard(index)) {
-        return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        return Attacks::rook(index, bb_occupied) & pin_hv;
     }
-    return Attacks::getRookAttacks(index, bb_occupied);
+    return Attacks::rook(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateQueenMoves(const uint8_t &index, const uint64_t &pin_hv, const uint64_t &pin_d,
@@ -377,18 +375,18 @@ uint64_t MoveGen::generateQueenMoves(const uint8_t &index, const uint64_t &pin_h
     uint64_t bb_square = Square::toBitboard(index);
 
     if(pin_hv & bb_square) {
-        return Attacks::getRookAttacks(index, bb_occupied) & pin_hv;
+        return Attacks::rook(index, bb_occupied) & pin_hv;
     }
 
     if(pin_d & bb_square) {
-        return Attacks::getBishopAttacks(index, bb_occupied) & pin_d;
+        return Attacks::bishop(index, bb_occupied) & pin_d;
     }
 
-    return Attacks::getQueenAttacks(index, bb_occupied);
+    return Attacks::queen(index, bb_occupied);
 }
 
 uint64_t MoveGen::generateKingMoves(const uint8_t &index, const uint64_t &bb_attacked, const uint64_t &bb_movable_squares) {
-    return Attacks::getKingAttacks(index) & bb_movable_squares & ~bb_attacked;
+    return Attacks::king(index) & bb_movable_squares & ~bb_attacked;
 }
 
 template<Color::Value color, MoveGenType moveGenType>
@@ -403,14 +401,14 @@ void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, 
     for(const auto castle : Castling::getCastlings<color>()) {
         if(!castling_rights.has(castle)) continue;
 
-        const uint8_t end_king_index = Castling::getEndingKingIndex(castle);
-        const uint8_t start_rook_index = Castling::getStartingRookIndex(castle);
+        const uint8_t king_to_index = Castling::kingTargetIndex(castle);
+        const uint8_t rook_from_index = Castling::rookSourceIndex(castle);
 
         // Squares that have to be empty
-        const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][start_rook_index];
+        const uint64_t not_occ_path = SQUARES_BETWEEN[king_index][rook_from_index];
 
         // Squares that are not allowed to be attacked by the enemy
-        const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][end_king_index] | Square::toBitboard(end_king_index);
+        const uint64_t not_attacked_path = SQUARES_BETWEEN[king_index][king_to_index] | Square::toBitboard(king_to_index);
 
         // Bitboard with all empty squares and squares that are not attacked by the enemy
         const uint64_t empty_not_attacked = ~board.getOccupancy() & ~bb_attacked;
@@ -430,7 +428,7 @@ void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, 
             continue;
         }
 
-        moves.push_back(Move::create<MoveType::CASTLING>(king_index, end_king_index));
+        moves.push_back(Move::create<MoveType::CASTLING>(king_index, king_to_index));
     }
 }
 
@@ -438,9 +436,9 @@ template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::legalMoves(const Board &board, std::vector<Move> &moves) {
     uint64_t bb_king = board.getPieces(color, PieceType::KING);
 
-    uint64_t bb_occupied = board.getOccupancy();
-    uint64_t bb_occ_us = board.getSide(color);
-    uint64_t bb_opponent = board.getSide(Color::opposite<color>());
+    const uint64_t bb_occupied = board.getOccupancy();
+    const uint64_t bb_occ_us = board.getSide(color);
+    const uint64_t bb_opponent = board.getSide(Color::opposite<color>());
 
     uint64_t movable_squares;
 

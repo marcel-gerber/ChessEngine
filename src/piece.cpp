@@ -1,8 +1,6 @@
 #include "piece.hpp"
 
-Piece::Piece(Piece::Value piece) : piece(piece) {
-
-}
+Piece::Piece(Piece::Value piece) : piece(piece) { }
 
 Piece::Piece(const char &c) : piece(Value::NONE) {
     switch(c) {
@@ -54,19 +52,19 @@ Piece::Piece(PieceType type, Color color) {
         return;
     }
 
-    if(type.getValue() == PieceType::NONE) {
+    if(type.value() == PieceType::NONE) {
         piece = Piece::NONE;
         return;
     }
 
-    piece = static_cast<Value>(color.getValue() * 6 + type.getIndex());
+    piece = static_cast<Value>(color.value() * 6 + type.index());
 }
 
 bool Piece::operator!=(const Piece &p) const {
     return piece != p.piece;
 }
 
-[[nodiscard]] Color Piece::getColor() const {
+[[nodiscard]] Color Piece::color() const {
     if(piece >= WHITE_PAWN && piece <= WHITE_KING) {
         return Color::WHITE;
     }
@@ -77,7 +75,7 @@ bool Piece::operator!=(const Piece &p) const {
     return Color::NONE;
 }
 
-[[nodiscard]] char Piece::getCharacter() const {
+[[nodiscard]] char Piece::character() const {
     switch(piece) {
         case Value::WHITE_PAWN:
             return 'P';
@@ -110,7 +108,7 @@ bool Piece::operator!=(const Piece &p) const {
     }
 }
 
-[[nodiscard]] PieceType Piece::getType() const {
+[[nodiscard]] PieceType Piece::type() const {
     if(piece == NONE) return PieceType::NONE;
     return static_cast<PieceType::Value>((uint8_t) piece % 6);
 }

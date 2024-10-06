@@ -47,7 +47,7 @@ private:
     Board &board;
 
 public:
-    UCICommandUCINewGame(Board &b) : board(b) { }
+    explicit UCICommandUCINewGame(Board &b) : board(b) { }
 
     void execute(const std::vector<std::string> &args) override {
         board.reset();
@@ -66,24 +66,24 @@ private:
 
         const Square from = Square(s_from);
         const Square to = Square(s_to);
-        const auto piece = board.getPiece(from.getIndex());
+        const auto piece = board.getPiece(from.index());
 
         // En Passant Move
-        if(piece.getType().getValue() == PieceType::PAWN && to.getIndex() == board.getEnPassantSquare()->getIndex()) {
-            return Move::create<MoveType::EN_PASSANT>(from.getIndex(), to.getIndex());
+        if(piece.type().value() == PieceType::PAWN && to.index() == board.getEnPassantSquare()->index()) {
+            return Move::create<MoveType::EN_PASSANT>(from.index(), to.index());
         }
 
         // Castling Move
-        if(piece.getType().getValue() == PieceType::KING && std::abs(from.getIndex() - to.getIndex()) == 2) {
-            return Move::create<MoveType::CASTLING>(from.getIndex(), to.getIndex());
+        if(piece.type().value() == PieceType::KING && std::abs(from.index() - to.index()) == 2) {
+            return Move::create<MoveType::CASTLING>(from.index(), to.index());
         }
 
         switch(input.size()) {
             case 4:
-                return Move::create<MoveType::NORMAL>(from.getIndex(), to.getIndex());
+                return Move::create<MoveType::NORMAL>(from.index(), to.index());
             case 5:
                 const auto promotion_piece = Piece(input[4]);
-                return Move::create<MoveType::PROMOTION>(from.getIndex(), to.getIndex(), promotion_piece.getType());
+                return Move::create<MoveType::PROMOTION>(from.index(), to.index(), promotion_piece.type());
         }
         return { };
     }
@@ -101,7 +101,7 @@ private:
     }
 
 public:
-    UCICommandPosition(Board &b) : board(b) { }
+    explicit UCICommandPosition(Board &b) : board(b) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) return;
@@ -140,7 +140,7 @@ private:
     SearchThread &search_thread;
 
 public:
-    UCICommandGo(Board &b, SearchThread &st) : board(b), search_thread(st) { }
+    explicit UCICommandGo(Board &b, SearchThread &st) : board(b), search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
@@ -191,7 +191,7 @@ private:
     SearchThread &search_thread;
 
 public:
-    UCICommandStop(SearchThread &st) : search_thread(st) { }
+    explicit UCICommandStop(SearchThread &st) : search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         search_thread.stop();

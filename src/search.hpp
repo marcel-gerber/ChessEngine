@@ -33,11 +33,11 @@ private:
     int thinking_time = 0;
 
     // PV Nodes
-    std::array<std::array<Move, Constants::MAX_PLY>, Constants::MAX_PLY> pv;
-    std::array<int, Constants::MAX_PLY> pv_length;
+    std::array<std::array<Move, Constants::MAX_PLY>, Constants::MAX_PLY> pv = {};
+    std::array<int, Constants::MAX_PLY> pv_length = {};
 
     // Stop flag for search thread
-    std::atomic<bool> stop_flag;
+    std::atomic<bool> stop_flag = {false};
 
     int negamax(int depth, int alpha, int beta, int ply);
     int quiescence(int alpha, int beta);

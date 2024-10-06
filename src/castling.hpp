@@ -23,27 +23,21 @@ public:
         BLACK_000 = 0b00001000
     };
 
-    static constexpr Value NO_CASTLING = Value::NO_CASTLING;
-    static constexpr Value WHITE_00 = Value::WHITE_00;
-    static constexpr Value WHITE_000 = Value::WHITE_000;
-    static constexpr Value BLACK_00 = Value::BLACK_00;
-    static constexpr Value BLACK_000 = Value::BLACK_000;
-
     Castling();
 
-    [[nodiscard]] uint8_t getCastlingRights() const;
+    [[nodiscard]] uint8_t raw() const;
 
     void set(const Value &castling);
 
     void unset(const Value &castling);
 
-    void unset(const Color color);
+    void unset(const Color &color);
 
     void reset();
 
     [[nodiscard]] bool has(const Value &castling) const;
 
-    [[nodiscard]] bool has(const Color color) const;
+    [[nodiscard]] bool has(const Color &color) const;
 
     [[nodiscard]] bool hasNoCastling() const;
 
@@ -59,7 +53,7 @@ public:
         }
     }
 
-    static constexpr uint8_t getEndingKingIndex(const Value &castling) {
+    static constexpr uint8_t kingTargetIndex(const Value &castling) {
         switch(castling) {
             case WHITE_00:
                 return 6;
@@ -74,7 +68,7 @@ public:
         }
     }
 
-    static constexpr uint8_t getEndingRookIndex(const Value &castling) {
+    static constexpr uint8_t rookTargetIndex(const Value &castling) {
         switch(castling) {
             case WHITE_00:
                 return 5;
@@ -89,7 +83,7 @@ public:
         }
     }
 
-    static constexpr uint8_t getStartingRookIndex(const Value &castling) {
+    static constexpr uint8_t rookSourceIndex(const Value &castling) {
         switch(castling) {
             case WHITE_00:
                 return 7;
@@ -105,7 +99,7 @@ public:
     }
 
     /// Returns the castling based on the starting rook index
-    static constexpr Value getFromRookIndex(const uint8_t &index) {
+    static constexpr Value fromRookSourceIndex(const uint8_t &index) {
         switch(index) {
             case 0:
                 return WHITE_000;
@@ -121,7 +115,7 @@ public:
     }
 
     /// Returns the castling based on the ending king index
-    static constexpr Value getFromKingIndex(const uint8_t &index) {
+    static constexpr Value fromKingTargetIndex(const uint8_t &index) {
         switch(index) {
             case 2:
                 return WHITE_000;
@@ -135,6 +129,12 @@ public:
                 return NO_CASTLING;
         }
     }
+
+    static constexpr Value NO_CASTLING = Value::NO_CASTLING;
+    static constexpr Value WHITE_00 = Value::WHITE_00;
+    static constexpr Value WHITE_000 = Value::WHITE_000;
+    static constexpr Value BLACK_00 = Value::BLACK_00;
+    static constexpr Value BLACK_000 = Value::BLACK_000;
 
 };
 

@@ -10,10 +10,10 @@
 #include <cstdint>
 #include <iostream>
 
-enum class NodeType : uint8_t {
-    PV_NODE,    // EXACT
-    ALL_NODE,   // UPPER-BOUND
-    CUT_NODE    // LOWER-BOUND
+enum class Flag : uint8_t {
+    EXACT,          // PV-Node
+    UPPER_BOUND,    // All-Node
+    LOWER_BOUND     // Cut-Node
 };
 
 class TT {
@@ -24,7 +24,7 @@ public:
         Move best_move;
         uint8_t depth;
         int evaluation;
-        NodeType nodeType;
+        Flag flag;
     };
 
     static Entry* getEntry(const uint64_t &zobrist_key);

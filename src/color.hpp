@@ -18,11 +18,9 @@ public:
 
     Color() = default;
 
-    Color(Value color) : color(color) {
+    Color(Value color) : color(color) { }
 
-    }
-
-    [[nodiscard]] constexpr Value getOppositeColor() const {
+    [[nodiscard]] constexpr Value opposite() const {
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 
@@ -31,12 +29,12 @@ public:
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;
     }
 
-    [[nodiscard]] constexpr uint8_t getValue() const {
+    [[nodiscard]] constexpr uint8_t value() const {
         return static_cast<uint8_t>(color);
     }
 
     constexpr bool operator==(const Color &rhs) const {
-        return getValue() == rhs.getValue();
+        return value() == rhs.value();
     }
 
     static constexpr Value WHITE = Value::WHITE;

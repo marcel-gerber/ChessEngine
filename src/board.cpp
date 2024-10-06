@@ -8,63 +8,28 @@
 #include <sstream>
 
 Board::Board() {
-    for(auto & piece : pieces) {
-        piece = Piece::NONE;
-    }
-
+    std::fill(std::begin(pieces), std::end(pieces), Piece::NONE);
     castling_rights = Castling();
 }
 
-[[nodiscard]] uint64_t Board::getZobrist() const {
-    return zobrist_hash;
-}
-
-[[nodiscard]] Castling Board::getCastlingRights() const {
-    return castling_rights;
-}
-
-[[nodiscard]] const Square* Board::getEnPassantSquare() const {
-    return &en_passant_square;
-}
-
-void Board::setEnPassantSquare(Square square) {
-    this->en_passant_square = square;
-}
-
-[[nodiscard]] Color Board::getSideToMove() const {
-    return this->side_to_move;
-}
-
-void Board::setSideToMove(Color color) {
-    this->side_to_move = color;
-}
-
-[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
-    return this->half_move_clock;
-}
-
-void Board::setHalfMoveClock(const uint8_t &half_move) {
-    this->half_move_clock = half_move;
-}
-
 void Board::placePiece(const Piece &piece, const uint8_t &index) {
-    Bits::set(bb_pieces[piece.getType().getIndex()], index);
-    Bits::set(bb_sides[piece.getColor().getValue()], index);
+    Bits::set(bb_pieces[piece.type().index()], index);
+    Bits::set(bb_sides[piece.color().value()], index);
     pieces[index] = piece;
 }
 
 void Board::removePiece(const Piece &piece, const uint8_t &index) {
-    Bits::unset(bb_pieces[piece.getType().getIndex()], index);
-    Bits::unset(bb_sides[piece.getColor().getValue()], index);
+    Bits::unset(bb_pieces[piece.type().index()], index);
+    Bits::unset(bb_sides[piece.color().value()], index);
     pieces[index] = Piece::NONE;
 }
 
 [[nodiscard]] uint64_t Board::getPieces(const Color &color, const PieceType &pieceType) const {
-    return bb_sides[color.getValue()] & bb_pieces[pieceType.getIndex()];
+    return bb_sides[color.value()] & bb_pieces[pieceType.index()];
 }
 
 [[nodiscard]] uint64_t Board::getPieces(const PieceType &pieceType) const {
-    return bb_pieces[pieceType.getIndex()];
+    return bb_pieces[pieceType.index()];
 }
 
 [[nodiscard]] Piece Board::getPiece(const uint8_t &index) const {
@@ -72,7 +37,7 @@ void Board::removePiece(const Piece &piece, const uint8_t &index) {
 }
 
 [[nodiscard]] uint64_t Board::getSide(Color color) const {
-    return bb_sides[color.getValue()];
+    return bb_sides[color.value()];
 }
 
 [[nodiscard]] uint64_t Board::getOccupancy() const {
@@ -85,8 +50,8 @@ void Board::removePiece(const Piece &piece, const uint8_t &index) {
 }
 
 void Board::makeMove(const Move &move) {
-    const uint8_t from = move.from_index();
-    const uint8_t to = move.to_index();
+    const uint8_t from = move.fromIndex();
+    const uint8_t to = move.toIndex();
     const uint16_t type = move.type();
 
     const Piece moved = getPiece(from);
@@ -97,8 +62,8 @@ void Board::makeMove(const Move &move) {
 
     half_move_clock++;
 
-    if(en_passant_square.getValue() != Square::NONE) {
-        zobrist_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
+    if(en_passant_square.value() != Square::NONE) {
+        zobrist_hash ^= Zobrist::enPassant(en_passant_square.index());
         en_passant_square = Square::NONE;
     }
 
@@ -109,52 +74,52 @@ void Board::makeMove(const Move &move) {
         zobrist_hash ^= Zobrist::piece(captured, to);
 
         // Remove castling right if rook has been captured
-        if(captured.getType().getValue() == PieceType::ROOK) {
-            const Castling::Value castling = Castling::getFromRookIndex(to);
+        if(captured.type().value() == PieceType::ROOK) {
+            const Castling::Value castling = Castling::fromRookSourceIndex(to);
 
             // Update zobrist hashes and unset castling rights
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
             castling_rights.unset(castling);
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
         }
     }
 
     if(castling_rights.has(side_to_move)) {
-        if(moved.getType().getValue() == PieceType::KING) {
+        if(moved.type().value() == PieceType::KING) {
             // Remove castling rights if king moves
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
             castling_rights.unset(side_to_move);
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
-        } else if(moved.getType().getValue() == PieceType::ROOK) {
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
+        } else if(moved.type().value() == PieceType::ROOK) {
             // Remove castling rights if rook moves
-            const Castling::Value castling = Castling::getFromRookIndex(from);
+            const Castling::Value castling = Castling::fromRookSourceIndex(from);
 
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
             castling_rights.unset(castling);
-            zobrist_hash ^= Zobrist::castling(castling_rights.getCastlingRights());
+            zobrist_hash ^= Zobrist::castling(castling_rights.raw());
         }
     }
 
-    if(moved.getType().getValue() == PieceType::PAWN) {
+    if(moved.type().value() == PieceType::PAWN) {
         half_move_clock = 0;
 
         // Double push
         if(std::abs(from - to) == 16) {
-            const uint8_t ep_square_index = Square::getEnPassantSquare(to);
-            const uint64_t ep_mask = Attacks::getPawnAttacks(side_to_move, ep_square_index);
+            const uint8_t ep_square_index = Square::enPassantIndex(to);
+            const uint64_t ep_mask = Attacks::pawn(side_to_move, ep_square_index);
 
             // if enemy pawns are attacking the en passant square -> set board's en passant square
-            if(ep_mask & getPieces(side_to_move.getOppositeColor(), PieceType::PAWN)) {
+            if(ep_mask & getPieces(side_to_move.opposite(), PieceType::PAWN)) {
                 en_passant_square = Square(ep_square_index);
-                zobrist_hash ^= Zobrist::en_passant(ep_square_index);
+                zobrist_hash ^= Zobrist::enPassant(ep_square_index);
             }
         }
     }
 
     if(type == MoveType::CASTLING) {
-        const Castling::Value castling = Castling::getFromKingIndex(to);
-        const uint8_t starting_rook_index = Castling::getStartingRookIndex(castling);
-        const uint8_t ending_rook_index = Castling::getEndingRookIndex(castling);
+        const Castling::Value castling = Castling::fromKingTargetIndex(to);
+        const uint8_t starting_rook_index = Castling::rookSourceIndex(castling);
+        const uint8_t ending_rook_index = Castling::rookTargetIndex(castling);
 
         const Piece rook = getPiece(starting_rook_index);
 
@@ -169,7 +134,7 @@ void Board::makeMove(const Move &move) {
         zobrist_hash ^= Zobrist::piece(moved, from) ^ Zobrist::piece(moved, to);
         zobrist_hash ^= Zobrist::piece(rook, starting_rook_index) ^ Zobrist::piece(rook, ending_rook_index);
     } else if(type == MoveType::PROMOTION) {
-        const PieceType promotion_type = PieceType(move.promotion_type());
+        const PieceType promotion_type = PieceType(move.promotionType());
         const Piece promotion_piece = Piece(promotion_type, side_to_move);
 
         removePiece(moved, from);
@@ -185,17 +150,16 @@ void Board::makeMove(const Move &move) {
     }
 
     if(type == MoveType::EN_PASSANT) {
-        const uint8_t ep_square_index = Square::getEnPassantSquare(to);
-        const Piece pawn = Piece(PieceType::PAWN, side_to_move.getOppositeColor());
+        const uint8_t ep_square_index = Square::enPassantIndex(to);
+        const Piece pawn = Piece(PieceType::PAWN, side_to_move.opposite());
 
-        // TODO: understanding this ??
         removePiece(pawn, ep_square_index);
 
         zobrist_hash ^= Zobrist::piece(pawn, ep_square_index);
     }
 
-    zobrist_hash ^= Zobrist::side_to_move();
-    side_to_move = side_to_move.getOppositeColor();
+    zobrist_hash ^= Zobrist::sideToMove();
+    side_to_move = side_to_move.opposite();
 
     incrementRepetition(zobrist_hash);
 }
@@ -211,19 +175,19 @@ void Board::unmakeMove(const Move &move) {
     castling_rights = prev.castling_rights;
     en_passant_square = prev.en_passant;
     half_move_clock = prev.half_move_clock;
-    side_to_move = side_to_move.getOppositeColor();
+    side_to_move = side_to_move.opposite();
     Piece captured = prev.captured;
 
-    const uint8_t from = move.from_index();
-    const uint8_t to = move.to_index();
+    const uint8_t from = move.fromIndex();
+    const uint8_t to = move.toIndex();
     const uint16_t type = move.type();
 
     if(type == MoveType::CASTLING) {
-        const Castling::Value castling = Castling::getFromKingIndex(to);
+        const Castling::Value castling = Castling::fromKingTargetIndex(to);
 
         // Positions for the rook
-        const uint8_t rook_from_index = Castling::getEndingRookIndex(castling);
-        const uint8_t rook_to_index = Castling::getStartingRookIndex(castling);
+        const uint8_t rook_from_index = Castling::rookTargetIndex(castling);
+        const uint8_t rook_to_index = Castling::rookSourceIndex(castling);
 
         const Piece rook = getPiece(rook_from_index);
         const Piece king = getPiece(to);
@@ -263,8 +227,8 @@ void Board::unmakeMove(const Move &move) {
     placePiece(moved, from);
 
     if(type == MoveType::EN_PASSANT) {
-        const Piece pawn = Piece(PieceType::PAWN, side_to_move.getOppositeColor());
-        const uint8_t pawn_to_index = en_passant_square.getIndex() ^ 8;
+        const Piece pawn = Piece(PieceType::PAWN, side_to_move.opposite());
+        const uint8_t pawn_to_index = en_passant_square.index() ^ 8;
 
         placePiece(pawn, pawn_to_index);
 
@@ -295,14 +259,12 @@ void Board::setFen(const std::string &fen) {
     const auto fen_castling = split.size() > 2 ? split[2] : "-";
     const auto fen_en_passant = split.size() > 3 ? split[3] : "-";
     const auto half_move_clock_str = split.size() > 4 ? split[4] : "0";
-    const auto full_move_counter_str = split.size() > 5 ? split[5] : "1";
 
     const uint8_t fen_half_move_clock = std::stoi(half_move_clock_str);
-    const uint16_t fen_full_move_counter = std::stoi(full_move_counter_str);
 
-    this->setHalfMoveClock(fen_half_move_clock);
-    this->setSideToMove(fen_side_to_move == "w" ? Color::WHITE : Color::BLACK);
-    this->setEnPassantSquare(Square(fen_en_passant));
+    half_move_clock = fen_half_move_clock;
+    side_to_move = fen_side_to_move == "w" ? Color::WHITE : Color::BLACK;
+    en_passant_square = Square(fen_en_passant);
 
     // start at upper left corner of board
     uint8_t index = 56;
@@ -310,7 +272,7 @@ void Board::setFen(const std::string &fen) {
         auto piece = Piece(c);
 
         if(piece != Piece::NONE) {
-            this->placePiece(piece, index);
+            placePiece(piece, index);
             index++;
             continue;
         }
@@ -329,22 +291,22 @@ void Board::setFen(const std::string &fen) {
         if(c == '-') break;
 
         if(c == 'K') {
-            this->castling_rights.set(Castling::WHITE_00);
+            castling_rights.set(Castling::WHITE_00);
             continue;
         }
 
         if(c == 'Q') {
-            this->castling_rights.set(Castling::WHITE_000);
+            castling_rights.set(Castling::WHITE_000);
             continue;
         }
 
         if(c == 'k') {
-            this->castling_rights.set(Castling::BLACK_00);
+            castling_rights.set(Castling::BLACK_00);
             continue;
         }
 
         if(c == 'q') {
-            this->castling_rights.set(Castling::BLACK_000);
+            castling_rights.set(Castling::BLACK_000);
             continue;
         }
     }
@@ -374,14 +336,14 @@ bool Board::isRepetition() const {
 
 bool Board::isCheck() const {
     const uint8_t king_index = getKingIndex(side_to_move);
-    const Color opponent = side_to_move.getOppositeColor();
+    const Color opponent = side_to_move.opposite();
     const uint64_t occ_bb = getOccupancy();
     const uint64_t opp_queen = getPieces(opponent, PieceType::QUEEN);
 
-    if(getPieces(opponent, PieceType::PAWN) & Attacks::getPawnAttacks(side_to_move, king_index)) return true;
-    if(getPieces(opponent, PieceType::KNIGHT) & Attacks::getKnightAttacks(king_index)) return true;
-    if((getPieces(opponent, PieceType::BISHOP) | opp_queen) & Attacks::getBishopAttacks(king_index, occ_bb)) return true;
-    if((getPieces(opponent, PieceType::ROOK) | opp_queen) & Attacks::getRookAttacks(king_index, occ_bb)) return true;
+    if(getPieces(opponent, PieceType::PAWN) & Attacks::pawn(side_to_move, king_index)) return true;
+    if(getPieces(opponent, PieceType::KNIGHT) & Attacks::knight(king_index)) return true;
+    if((getPieces(opponent, PieceType::BISHOP) | opp_queen) & Attacks::bishop(king_index, occ_bb)) return true;
+    if((getPieces(opponent, PieceType::ROOK) | opp_queen) & Attacks::rook(king_index, occ_bb)) return true;
 
     return false;
 }
@@ -403,12 +365,12 @@ uint64_t Board::calculateZobrist() const {
 
     uint64_t ep_hash = 0ULL;
 
-    if(en_passant_square.getValue() != Square::NONE) {
-        ep_hash ^= Zobrist::en_passant(en_passant_square.getIndex());
+    if(en_passant_square.value() != Square::NONE) {
+        ep_hash ^= Zobrist::enPassant(en_passant_square.index());
     }
 
-    uint64_t castling_hash = Zobrist::castling(castling_rights.getCastlingRights());
-    uint64_t side_hash = side_to_move == Color::WHITE ? Zobrist::side_to_move() : 0;
+    uint64_t castling_hash = Zobrist::castling(castling_rights.raw());
+    uint64_t side_hash = side_to_move == Color::WHITE ? Zobrist::sideToMove() : 0;
 
     return hash ^ ep_hash ^ castling_hash ^ side_hash;
 }
@@ -457,6 +419,26 @@ void Board::reset() {
     repetition_table.clear();
 }
 
+[[nodiscard]] uint64_t Board::getZobrist() const {
+    return zobrist_hash;
+}
+
+[[nodiscard]] Castling Board::getCastlingRights() const {
+    return castling_rights;
+}
+
+[[nodiscard]] const Square* Board::getEnPassantSquare() const {
+    return &en_passant_square;
+}
+
+[[nodiscard]] Color Board::getSideToMove() const {
+    return side_to_move;
+}
+
+[[nodiscard]] uint8_t Board::getHalfMoveClock() const {
+    return half_move_clock;
+}
+
 void Board::print() const {
     std::stringstream ss;
     uint8_t index = 56;
@@ -467,7 +449,7 @@ void Board::print() const {
     for(int i = 0; i < 8; i++) {
         for(int j = 0; j < 8; j++) {
             piece = getPiece(index);
-            ss << "| " << piece.getCharacter() << " ";
+            ss << "| " << piece.character() << " ";
 
             index++;
         }

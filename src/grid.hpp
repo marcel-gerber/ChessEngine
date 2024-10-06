@@ -23,7 +23,7 @@ public:
         FILE_H
     };
 
-    static uint64_t getBitboard(const uint8_t &index) {
+    static uint64_t bitboard(const uint8_t &index) {
         switch(static_cast<Value>(index)) {
             case Value::FILE_A:
                 return FILE_ABB;
@@ -70,7 +70,7 @@ public:
         RANK_8
     };
 
-    static uint64_t getBitboard(const uint8_t &index) {
+    static uint64_t bitboard(const uint8_t &index) {
         switch(static_cast<Value>(index)) {
             case Value::RANK_1:
                 return RANK_1BB;
@@ -94,7 +94,7 @@ public:
     }
 
     template<Color::Value color>
-    static constexpr uint64_t getPromoRank() {
+    static constexpr uint64_t promotion() {
         switch(color) {
             case Color::WHITE:
                 return RANK_8BB;
@@ -106,7 +106,7 @@ public:
     }
 
     template<Color::Value color>
-    static constexpr uint64_t getDoublePushRank() {
+    static constexpr uint64_t doublePush() {
         switch(color) {
             case Color::WHITE:
                 return RANK_3BB;
@@ -154,7 +154,7 @@ public:
         }
     }
 
-    Square(const std::string &string) : square(NONE) {
+    explicit Square(const std::string &string) : square(NONE) {
         if(string == "-") {
             return;
         }
@@ -164,18 +164,18 @@ public:
     }
 
     constexpr bool operator<(const uint64_t &rhs) const {
-        return getIndex() < rhs;
+        return index() < rhs;
     }
 
     constexpr void operator++(int) {
-        square = static_cast<Value>(getIndex() + 1);
+        square = static_cast<Value>(index() + 1);
     }
 
-    [[nodiscard]] constexpr uint8_t getIndex() const {
+    [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(square);
     }
 
-    [[nodiscard]] constexpr Value getValue() const {
+    [[nodiscard]] constexpr Value value() const {
         return square;
     }
 
@@ -183,7 +183,7 @@ public:
         return (square >= Value::A1 && square <= Value::H8);
     }
 
-    [[maybe_unused]] static std::string toString(const uint8_t &index) {
+    static std::string toString(const uint8_t &index) {
         std::string string;
         string += 'a' + (index & 7);
         string += '1' + (index >> 3);
@@ -195,31 +195,61 @@ public:
         return (1ULL << index);
     }
 
-    static constexpr uint8_t getEnPassantSquare(const uint8_t &index) {
+    static constexpr uint8_t enPassantIndex(const uint8_t &index) {
         return index ^ 8;
     }
 
     // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks
-    [[nodiscard]] uint8_t getFileIndex() const {
-        return getIndex() & 7;
+    [[nodiscard]] uint8_t fileIndex() const {
+        return index() & 7;
     }
 
-    [[nodiscard]] uint8_t getRankIndex() const {
-        return getIndex() >> 3;
+    [[nodiscard]] uint8_t rankIndex() const {
+        return index() >> 3;
     }
 
-    [[nodiscard]] uint8_t getDiagonalIndex() const {
-        return (getRankIndex() - getFileIndex()) & 15;
+    [[nodiscard]] uint8_t diagonalIndex() const {
+        return (rankIndex() - fileIndex()) & 15;
     }
 
-    [[nodiscard]] uint8_t getAntiDiagonalIndex() const {
-        return (getRankIndex() + getFileIndex()) ^ 7;
+    [[nodiscard]] uint8_t antiDiagonalIndex() const {
+        return (rankIndex() + fileIndex()) ^ 7;
     }
 
     static constexpr Value NONE = Value::NONE;
 
 private:
     Value square;
+};
+
+class Direction {
+public:
+    enum class Value : int8_t {
+        NORTH = 8,
+        EAST = 1,
+        SOUTH = -8,
+        WEST = -1,
+        NORTH_EAST = 9,
+        SOUTH_EAST = -7,
+        SOUTH_WEST = -9,
+        NORTH_WEST = 7,
+        NONE = 0
+    };
+
+    static constexpr int8_t toValue(const Value &value) {
+        return static_cast<int8_t>(value);
+    }
+
+    static constexpr Value NORTH = Value::NORTH;
+    static constexpr Value EAST = Value::EAST;
+    static constexpr Value SOUTH = Value::SOUTH;
+    static constexpr Value WEST = Value::WEST;
+    static constexpr Value NORTH_EAST = Value::NORTH_EAST;
+    static constexpr Value SOUTH_EAST = Value::SOUTH_EAST;
+    static constexpr Value SOUTH_WEST = Value::SOUTH_WEST;
+    static constexpr Value NORTH_WEST = Value::NORTH_WEST;
+    static constexpr Value NONE = Value::NONE;
+
 };
 
 #endif
