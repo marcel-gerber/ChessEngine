@@ -18,9 +18,7 @@ public:
 
     Color() = default;
 
-    Color(Value color) : color(color) {
-
-    }
+    Color(Value color) : color(color) { }
 
     [[nodiscard]] constexpr Value opposite() const {
         return (color == Value::WHITE) ? Value::BLACK : Value::WHITE;

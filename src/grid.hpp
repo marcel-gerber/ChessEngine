@@ -154,7 +154,7 @@ public:
         }
     }
 
-    Square(const std::string &string) : square(NONE) {
+    explicit Square(const std::string &string) : square(NONE) {
         if(string == "-") {
             return;
         }
@@ -183,7 +183,7 @@ public:
         return (square >= Value::A1 && square <= Value::H8);
     }
 
-    [[maybe_unused]] static std::string toString(const uint8_t &index) {
+    static std::string toString(const uint8_t &index) {
         std::string string;
         string += 'a' + (index & 7);
         string += '1' + (index >> 3);

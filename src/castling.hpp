@@ -31,13 +31,13 @@ public:
 
     void unset(const Value &castling);
 
-    void unset(const Color color);
+    void unset(const Color &color);
 
     void reset();
 
     [[nodiscard]] bool has(const Value &castling) const;
 
-    [[nodiscard]] bool has(const Color color) const;
+    [[nodiscard]] bool has(const Color &color) const;
 
     [[nodiscard]] bool hasNoCastling() const;
 

@@ -436,9 +436,9 @@ template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::legalMoves(const Board &board, std::vector<Move> &moves) {
     uint64_t bb_king = board.getPieces(color, PieceType::KING);
 
-    uint64_t bb_occupied = board.getOccupancy();
-    uint64_t bb_occ_us = board.getSide(color);
-    uint64_t bb_opponent = board.getSide(Color::opposite<color>());
+    const uint64_t bb_occupied = board.getOccupancy();
+    const uint64_t bb_occ_us = board.getSide(color);
+    const uint64_t bb_opponent = board.getSide(Color::opposite<color>());
 
     uint64_t movable_squares;
 

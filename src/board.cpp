@@ -259,10 +259,8 @@ void Board::setFen(const std::string &fen) {
     const auto fen_castling = split.size() > 2 ? split[2] : "-";
     const auto fen_en_passant = split.size() > 3 ? split[3] : "-";
     const auto half_move_clock_str = split.size() > 4 ? split[4] : "0";
-    const auto full_move_counter_str = split.size() > 5 ? split[5] : "1";
 
     const uint8_t fen_half_move_clock = std::stoi(half_move_clock_str);
-    const uint16_t fen_full_move_counter = std::stoi(full_move_counter_str);
 
     half_move_clock = fen_half_move_clock;
     side_to_move = fen_side_to_move == "w" ? Color::WHITE : Color::BLACK;

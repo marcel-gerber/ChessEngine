@@ -80,8 +80,8 @@ public:
         std::string to = Square::toString(toIndex());
 
         if(type() == MoveType::PROMOTION) {
-            auto piecetype = PieceType(promotionType());
-            return {from + to + piecetype.character()};
+            auto piece_type = PieceType(promotionType());
+            return {from + to + piece_type.character()};
         }
         return {from + to};
     }

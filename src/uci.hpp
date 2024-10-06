@@ -47,7 +47,7 @@ private:
     Board &board;
 
 public:
-    UCICommandUCINewGame(Board &b) : board(b) { }
+    explicit UCICommandUCINewGame(Board &b) : board(b) { }
 
     void execute(const std::vector<std::string> &args) override {
         board.reset();
@@ -101,7 +101,7 @@ private:
     }
 
 public:
-    UCICommandPosition(Board &b) : board(b) { }
+    explicit UCICommandPosition(Board &b) : board(b) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) return;
@@ -140,7 +140,7 @@ private:
     SearchThread &search_thread;
 
 public:
-    UCICommandGo(Board &b, SearchThread &st) : board(b), search_thread(st) { }
+    explicit UCICommandGo(Board &b, SearchThread &st) : board(b), search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         if(args.empty()) {
@@ -191,7 +191,7 @@ private:
     SearchThread &search_thread;
 
 public:
-    UCICommandStop(SearchThread &st) : search_thread(st) { }
+    explicit UCICommandStop(SearchThread &st) : search_thread(st) { }
 
     void execute(const std::vector<std::string> &args) override {
         search_thread.stop();

@@ -38,7 +38,7 @@ int TimeManager::getTimeForMove() const {
     return time_for_move;
 }
 
-Search::Search(Board &board) : board(board), stop_flag(false) { }
+Search::Search(Board &board) : board(board) { }
 
 void Search::start(const int &depth) {
     stop_flag = false;
