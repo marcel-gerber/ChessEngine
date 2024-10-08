@@ -20,7 +20,7 @@ enum class GameResult : uint8_t {
 
 class Board {
 private:
-    // Contains all the necessary information of a 'Board' for unmaking a move.
+    // Contains all the necessary information of a 'Board' for unmaking a move
     struct StateInfo {
         uint64_t hash;
         Castling castling_rights;
@@ -63,10 +63,10 @@ private:
     void incrementRepetition(const uint64_t &zobrist_key);
 
     /// Decreases the count of occurrences for this position (zobrist_key) by 1.
-    /// The entry will be deleted if it's value is 0
+    /// The entry will be deleted if its' value is 0
     void decrementRepetition(const uint64_t &zobrist_key);
 
-    /// Calculates the the Zobrist hash of the board. Should only be used to initialize 'zobrist_hash'
+    /// Calculates the Zobrist hash of the board. Should only be used to initialize 'zobrist_hash'
     [[nodiscard]] uint64_t calculateZobrist() const;
 
 public:
@@ -105,7 +105,7 @@ public:
     /// Checks whether the king of the side to move is attacked by the enemy
     [[nodiscard]] bool isCheck() const;
 
-    /// Checks whether the current position is a draw. Expects the result of 'isCheck()' as parameter to save time.
+    /// Checks whether the current position is a draw. Expects the result of 'isCheck()' as a parameter to save time.
     /// Returns a 'GameResult' which can be 'DRAW', 'LOSE' or 'NONE'
     GameResult checkForDraw(const bool &is_check) const;
 
@@ -118,7 +118,7 @@ public:
     /// Returns the current castling rights
     [[nodiscard]] Castling getCastlingRights() const;
 
-    /// Returns a pointer to the current En Passant Square. Can be 'NONE'
+    /// Returns a pointer to the current En Passant Square. Square can be 'NONE'
     [[nodiscard]] const Square* getEnPassantSquare() const;
 
     /// Returns the current side to move
