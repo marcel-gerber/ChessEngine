@@ -11,13 +11,13 @@ Lorem ipsum oder so
 Configure CMake.
 
 ```bash
-  cmake -S . -B build
+cmake -S . -B build
 ```
 
 Build executable.
 
 ```bash
-  cmake --build build --target ChessEngine
+cmake --build build --target ChessEngine
 ```
 
 ## Running Tests
@@ -25,18 +25,18 @@ Build executable.
 Configure CMake.
 
 ```bash
-  cmake -S . -B build
+cmake -S . -B build
 ```
 
 Build test-executable.
 
 ```bash
-  cmake --build build --target ChessEngineTests
+cmake --build build --target ChessEngineTests
 ```
 
 Run tests.
 
 ```bash
-  cd build/test
-  ./ChessEngineTests
+cd build/test
+./ChessEngineTests
 ```
