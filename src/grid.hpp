@@ -1,11 +1,8 @@
-//
-// Created by Marcel on 29.02.2024.
-//
-
 #ifndef CHESSENGINE_GRID_HPP
 #define CHESSENGINE_GRID_HPP
 
 #include "color.hpp"
+
 #include <cstdint>
 #include <cassert>
 #include <string>
@@ -23,6 +20,7 @@ public:
         FILE_H
     };
 
+    /// Returns a bitboard of the file given its' index
     static uint64_t bitboard(const uint8_t &index) {
         switch(static_cast<Value>(index)) {
             case Value::FILE_A:
@@ -70,6 +68,7 @@ public:
         RANK_8
     };
 
+    /// Returns a bitboard of the rank given its' index
     static uint64_t bitboard(const uint8_t &index) {
         switch(static_cast<Value>(index)) {
             case Value::RANK_1:
@@ -93,6 +92,7 @@ public:
         }
     }
 
+    /// Returns a bitboard of the promotion rank based on the 'Color'
     template<Color::Value color>
     static constexpr uint64_t promotion() {
         switch(color) {
@@ -105,6 +105,7 @@ public:
         }
     }
 
+    /// Returns a bitboard of the double push rank based on the 'Color'
     template<Color::Value color>
     static constexpr uint64_t doublePush() {
         switch(color) {
@@ -128,6 +129,9 @@ public:
 
 };
 
+// Class for representing a square on the board.
+// We will be using the "Little-Endian Rank-File Mapping" (LERF).
+// More information here: https://www.chessprogramming.org/Square_Mapping_Considerations
 class Square {
 public:
     enum class Value : uint8_t {
@@ -154,6 +158,9 @@ public:
         }
     }
 
+    /// Creates a 'Square' object off a string. Expects exactly two characters.
+    /// First: lower case character between 'a' and 'h'
+    /// Second: number between 1 and 8
     explicit Square(const std::string &string) : square(NONE) {
         if(string == "-") {
             return;
@@ -163,26 +170,32 @@ public:
         square = static_cast<Square::Value>((string[0] - 'a') + ((string[1] - '1') * 8));
     }
 
+    /// Returns 'true' when the lefts' square index is lower than the rights' square index
     constexpr bool operator<(const uint64_t &rhs) const {
         return index() < rhs;
     }
 
+    /// Increases the squares' index by one
     constexpr void operator++(int) {
         square = static_cast<Value>(index() + 1);
     }
 
+    /// Returns the index of the square
     [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(square);
     }
 
+    /// Returns the 'Value' of the square
     [[nodiscard]] constexpr Value value() const {
         return square;
     }
 
+    /// Returns 'true' if the squares' index is between 0 and 63
     [[nodiscard]] bool isValid() const {
         return (square >= Value::A1 && square <= Value::H8);
     }
 
+    /// Converts the square to a string (e.g., e4)
     static std::string toString(const uint8_t &index) {
         std::string string;
         string += 'a' + (index & 7);
@@ -191,27 +204,32 @@ public:
         return string;
     }
 
+    /// Returns the bitboard of the square. Only the bit of the squares' index will be set
     static uint64_t toBitboard(const uint8_t &index) {
         return (1ULL << index);
     }
 
+    /// Calculates the squares' en passant index
     static constexpr uint8_t enPassantIndex(const uint8_t &index) {
         return index ^ 8;
     }
 
-    // https://www.chessprogramming.org/Efficient_Generation_of_Sliding_Piece_Attacks
+    /// Returns the squares' file index
     [[nodiscard]] uint8_t fileIndex() const {
         return index() & 7;
     }
 
+    /// Returns the squares' rank index
     [[nodiscard]] uint8_t rankIndex() const {
         return index() >> 3;
     }
 
+    /// Returns the squares' diagonal index
     [[nodiscard]] uint8_t diagonalIndex() const {
         return (rankIndex() - fileIndex()) & 15;
     }
 
+    /// Returns the squares' anti diagonal index
     [[nodiscard]] uint8_t antiDiagonalIndex() const {
         return (rankIndex() + fileIndex()) ^ 7;
     }
@@ -236,6 +254,7 @@ public:
         NONE = 0
     };
 
+    /// Returns the enums' numeric value
     static constexpr int8_t toValue(const Value &value) {
         return static_cast<int8_t>(value);
     }
