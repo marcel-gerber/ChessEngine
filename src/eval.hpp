@@ -6,6 +6,8 @@
 #include <array>
 #include <cstdint>
 
+// When evaluating a board, we differ between middlegame and endgame.
+// We evaluate with "endgame" when there are no more than seven major or minor pieces left on the board
 enum class GameState : uint8_t {
     MIDDLEGAME,
     ENDGAME
@@ -13,6 +15,10 @@ enum class GameState : uint8_t {
 
 class Eval {
 
+// All Piece-Square Tables for each piece type
+// The first index corresponds to the color.
+// 0: White
+// 1: Black
 private:
     static constexpr int8_t PAWN_POSITIONS[2][64] = {
         {
@@ -129,6 +135,7 @@ private:
         }
     };
 
+    // The kings' Piece-Square Table for the middlegame
     static constexpr int8_t KING_MIDDLEGAME_POSITIONS[2][64] = {
         {
             -30,-40,-40,-50,-50,-40,-40,-30,
@@ -152,6 +159,7 @@ private:
         }
     };
 
+    // The kings' Piece-Square Table for the endgame
     static constexpr int8_t KING_ENDGAME_POSITIONS[2][64] = {
         {
             -50,-40,-30,-20,-20,-30,-40,-50,
@@ -175,10 +183,13 @@ private:
         }
     };
 
-public:
+    /// Evaluates a board with 'GameState'. Should only be used by 'evaluate()'
     template<GameState gameState>
     static int evaluate(const Board &board);
 
+public:
+    /// Evaluates the current position of the board. Always returns a positive number
+    /// when the current side to move has an advantage. Negative when it has a disadvantage
     static int evaluate(const Board &board);
 
     static constexpr uint16_t PAWN_VALUE = 100;
