@@ -1,10 +1,13 @@
 #include <cstdint>
 
-// all pre-calculated lookup tables by Disservin
+// all pre-calculated lookup tables taken from Disservins' 'chess-library'
 // https://github.com/Disservin/chess-library/blob/master/src/attacks_fwd.hpp
 class Constants {
 public:
+    // FEN-string of the starting position
     static constexpr auto START_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    // Maximum search depth in plies
     static constexpr int MAX_PLY = 64;
 
     // pre-calculated lookup table for pawn attacks
@@ -82,7 +85,7 @@ public:
             0x2838000000000000, 0x5070000000000000, 0xA0E0000000000000, 0x40C0000000000000
     };
 
-    // Magic numbers for Rooks
+    // Magic numbers for the rook table
     static constexpr uint64_t RookMagics[64] = {
             0x0080004000976080ULL, 0x1040400010002000ULL, 0x4880200210000980ULL, 0x5280080010000482ULL,
             0x0200040200081020ULL, 0x2100080100020400ULL, 0x4280008001000200ULL, 0x01000a4425820300ULL,
@@ -102,7 +105,7 @@ public:
             0x0801000800040211ULL, 0x480d000400820801ULL, 0x0820104201280084ULL, 0x1001040311802142ULL
     };
 
-    // Magic numbers for Bishops
+    // Magic numbers for the bishop table
     static constexpr uint64_t BishopMagics[64] = {
             0x001024b002420160ULL, 0x1008080140420021ULL, 0x2012080041080024ULL, 0x0c282601408c0802ULL,
             0x2004042000000002ULL, 0x0012021004022080ULL, 0x0880414820100000ULL, 0x4501002211044000ULL,
