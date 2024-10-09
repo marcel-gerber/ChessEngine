@@ -7,7 +7,7 @@
 #include <cstdint>
 
 // When evaluating a board, we differ between middlegame and endgame.
-// We evaluate with "endgame" when there are no more than seven major or minor pieces left on the board
+// We evaluate with "endgame" when there are less than seven major or minor pieces left on the board
 enum class GameState : uint8_t {
     MIDDLEGAME,
     ENDGAME
