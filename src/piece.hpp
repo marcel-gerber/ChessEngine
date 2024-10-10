@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 28.02.2024.
-//
-
 #ifndef CHESSENGINE_PIECE_HPP
 #define CHESSENGINE_PIECE_HPP
 
@@ -26,23 +22,27 @@ public:
 
     constexpr PieceType(Value pieceType) : pieceType(pieceType) { }
 
+    /// Constructor for creating a 'PieceType' with its' index
     constexpr explicit PieceType(const uint8_t &type) {
         pieceType = static_cast<Value>(type);
     }
 
+    /// Returns the enums' index of the 'PieceType'
     [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(pieceType);
     }
 
+    /// Returns the 'PieceTypes' enum
     [[nodiscard]] constexpr Value value() const {
         return pieceType;
     }
 
-    // used for Move::create
+    /// Operator used for Move::create()
     constexpr uint16_t operator-(const PieceType &pt) const {
         return index() - pt.index();
     }
 
+    /// Returns the 'PieceTypes' character
     [[nodiscard]] constexpr char character() const {
         switch(pieceType) {
             case Value::PAWN:
@@ -101,16 +101,21 @@ public:
 
     Piece(PieceType type, Color color);
 
+    /// Returns 'true' when both Pieces' are not equal
     bool operator!=(const Piece &p) const;
 
+    /// Returns the Pieces' enum index
     [[nodiscard]] constexpr uint8_t index() const {
         return static_cast<uint8_t>(piece);
     }
 
+    /// Returns the Pieces' color
     [[nodiscard]] Color color() const;
 
+    /// Returns the Pieces' character
     [[nodiscard]] char character() const;
 
+    /// Returns the Pieces' type
     [[nodiscard]] PieceType type() const;
 
     static constexpr Value WHITE_PAWN = Value::WHITE_PAWN;
