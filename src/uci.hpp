@@ -14,7 +14,8 @@
 
 // This file implements the UCI protocol using the Command Design Pattern
 
-// Abstract class for a UIC command
+// ---------------- Abstract class for a UCI command ----------------
+
 class UCICommand {
 
 public:
@@ -22,7 +23,8 @@ public:
     virtual ~UCICommand() = default;
 };
 
-// Command "uci"
+// ------------------------- Command "uci" -------------------------
+
 class UCICommandUCI : public UCICommand {
 
 public:
@@ -33,7 +35,8 @@ public:
     }
 };
 
-// Command "isready"
+// ----------------------- Command "isready" -----------------------
+
 class UCICommandIsReady : public UCICommand {
 
 public:
@@ -42,7 +45,8 @@ public:
     }
 };
 
-// Command "ucinewgame"
+// ---------------------- Command "ucinewgame" ----------------------
+
 class UCICommandUCINewGame : public UCICommand {
 
 private:
@@ -57,12 +61,14 @@ public:
     }
 };
 
-// Command "position"
+// ----------------------- Command "position" -----------------------
+
 class UCICommandPosition : public UCICommand {
 
 private:
     Board &board;
 
+    /// Converts a move in UCI-format to a 'Move'-object
     Move uciToMove(const std::string &input) {
         const std::string s_from = input.substr(0, 2);
         const std::string s_to = input.substr(2, 2);
@@ -71,12 +77,12 @@ private:
         const Square to = Square(s_to);
         const auto piece = board.getPiece(from.index());
 
-        // En Passant Move
+        // En Passant move
         if(piece.type().value() == PieceType::PAWN && to.index() == board.getEnPassantSquare()->index()) {
             return Move::create<MoveType::EN_PASSANT>(from.index(), to.index());
         }
 
-        // Castling Move
+        // Castling move
         if(piece.type().value() == PieceType::KING && std::abs(from.index() - to.index()) == 2) {
             return Move::create<MoveType::CASTLING>(from.index(), to.index());
         }
@@ -91,6 +97,8 @@ private:
         return { };
     }
 
+    /// Returns a pair consisting of the index where 'moves' begins in the argument vector,
+    /// and the complete FEN string as the second element
     static std::pair<int, std::string> getIndexAndFen(const std::vector<std::string> &args) {
         std::string fen = args[1];
         int index = 2;
@@ -136,7 +144,8 @@ public:
     }
 };
 
-// Command "go"
+// -------------------------- Command "go" --------------------------
+
 class UCICommandGo : public UCICommand {
 
 private:
@@ -185,11 +194,13 @@ public:
                 continue;
             }
         }
+        // Start the search with time control
         search_thread.start(Constants::MAX_PLY);
     }
 };
 
-// Command "stop"
+// ------------------------- Command "stop" -------------------------
+
 class UCICommandStop : public UCICommand {
 
 private:
@@ -203,7 +214,8 @@ public:
     }
 };
 
-// Class for handling all UCI commands
+// -------------- Class for handling all UCI commands --------------
+
 class UCIHandler {
 
 private:
@@ -211,6 +223,8 @@ private:
     SearchThread searchThread;
     Board board;
 
+    /// Returns a pair: first element is the command,
+    /// second element is a vector with the commands' arguments
     static std::pair<std::string, std::vector<std::string>> split(const std::string &input) {
         std::vector<std::string> arguments;
         std::stringstream stringstream(input);
@@ -226,6 +240,8 @@ private:
         return {command, arguments};
     }
 
+    /// Splits the input into a command and its arguments,
+    /// then executes the command with the provided arguments
     void handleCommand(const std::string &input) {
         const auto split_pair = split(input);
         const auto &command = split_pair.first;
@@ -248,6 +264,8 @@ public:
         commands["stop"] = std::make_unique<UCICommandStop>(searchThread);
     }
 
+    /// Continuously reads and processes input commands until 'quit' is entered.
+    /// Unknown commands will be ignored
     void inputLoop() {
         std::string input;
 
