@@ -1,8 +1,8 @@
 #ifndef CHESSENGINE_RANDOMGEN_HPP
 #define CHESSENGINE_RANDOMGEN_HPP
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <random>
 #include <string>
 
@@ -11,6 +11,8 @@
 class RandomNumberGen {
 
 private:
+    /// Generates an 'amount' of random 64-bit integers.
+    /// Prints out copyable array to the console
     static void generate(const std::string &name, const int &amount) {
         std::random_device random;
         std::mt19937_64 engine(random());
@@ -35,13 +37,17 @@ private:
     }
 
 public:
-    static void generate_pieces() { generate("Pieces", 768); }
+    /// Generates Array with random 64-bit integers for the Pieces
+    static void generatePieces() { generate("Pieces", 768); }
 
-    static void generate_en_passant() { generate("EnPassant", 64); }
+    /// Generates Array with random 64-bit integers for en passant
+    static void generateEnPassant() { generate("EnPassant", 64); }
 
-    static void generate_castling() { generate("Castling", 16); }
+    /// Generates Array with random 64-bit integers for Castling
+    static void generateCastling() { generate("Castling", 16); }
 
-    static void generate_side_to_move() { generate("SideToMove", 1); }
+    /// Generates Array with random 64-bit integers for the side to move
+    static void generateSideToMove() { generate("SideToMove", 1); }
 };
 
 #endif
