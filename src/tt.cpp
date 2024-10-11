@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 23.08.2024.
-//
-
 #include "tt.hpp"
 
 TT::Entry* TT::getEntry(const uint64_t &zobrist_key) {
@@ -13,6 +9,7 @@ void TT::addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint
     Entry* entry = getEntry(zobrist_key);
     Flag flag;
 
+    // Determine the nodes' flag
     if(eval <= alpha) {
         flag = Flag::UPPER_BOUND;
     } else if(eval >= beta) {
@@ -21,6 +18,7 @@ void TT::addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint
         flag = Flag::EXACT;
     }
 
+    // We only override an existing TT entry when we have a pv node (EXACT flag)
     if(entry->zobrist_key != zobrist_key || flag == Flag::EXACT) {
         entry->zobrist_key = zobrist_key;
         entry->best_move = best_move;
