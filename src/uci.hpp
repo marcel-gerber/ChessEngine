@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 05.09.2024.
-//
-
 #ifndef CHESSENGINE_UCI_HPP
 #define CHESSENGINE_UCI_HPP
 
@@ -16,6 +12,9 @@
 #include <unordered_map>
 #include <vector>
 
+// This file implements the UCI protocol using the Command Design Pattern
+
+// Abstract class for a UIC command
 class UCICommand {
 
 public:
@@ -23,6 +22,7 @@ public:
     virtual ~UCICommand() = default;
 };
 
+// Command "uci"
 class UCICommandUCI : public UCICommand {
 
 public:
@@ -33,6 +33,7 @@ public:
     }
 };
 
+// Command "isready"
 class UCICommandIsReady : public UCICommand {
 
 public:
@@ -41,6 +42,7 @@ public:
     }
 };
 
+// Command "ucinewgame"
 class UCICommandUCINewGame : public UCICommand {
 
 private:
@@ -55,6 +57,7 @@ public:
     }
 };
 
+// Command "position"
 class UCICommandPosition : public UCICommand {
 
 private:
@@ -133,6 +136,7 @@ public:
     }
 };
 
+// Command "go"
 class UCICommandGo : public UCICommand {
 
 private:
@@ -185,6 +189,7 @@ public:
     }
 };
 
+// Command "stop"
 class UCICommandStop : public UCICommand {
 
 private:
@@ -198,6 +203,7 @@ public:
     }
 };
 
+// Class for handling all UCI commands
 class UCIHandler {
 
 private:
@@ -232,6 +238,7 @@ private:
     }
 
 public:
+    // Register all commands in our map
     UCIHandler() : board(Board()), searchThread(SearchThread(board)) {
         commands["uci"] = std::make_unique<UCICommandUCI>();
         commands["isready"] = std::make_unique<UCICommandIsReady>();
