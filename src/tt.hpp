@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 23.08.2024.
-//
-
 #ifndef CHESSENGINE_TT_HPP
 #define CHESSENGINE_TT_HPP
 
@@ -27,14 +23,18 @@ public:
         Flag flag;
     };
 
+    /// Returns a pointer to an entry
     static Entry* getEntry(const uint64_t &zobrist_key);
 
+    /// Stores data in the Transposition Table
     static void addEntry(const uint64_t &zobrist_key, const Move &best_move, const uint8_t &depth, const int &eval,
                          const int &alpha, const int &beta);
 
+    /// Clears the Transposition Table. Should be called before starting a new game
     static void clear();
 
 private:
+    // All entries will be stored in this array
     static inline Entry Table[0xFFFFF] = {};
 
 };
