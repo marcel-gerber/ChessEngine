@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 08.03.2024.
-//
-
 #ifndef CHESSENGINE_MAGICGEN_HPP
 #define CHESSENGINE_MAGICGEN_HPP
 
@@ -63,6 +59,8 @@ private:
     static uint64_t find_magic(int sq, int m, int bishop);
 
 public:
+    /// Generates magic number for rook and bishop magic tables.
+    /// Prints out copyable arrays to the console
     static void run();
 };
 
