@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 16.09.2024.
-//
-
 #ifndef CHESSENGINE_THREAD_HPP
 #define CHESSENGINE_THREAD_HPP
 
@@ -11,6 +7,7 @@
 #include <memory>
 #include <thread>
 
+// Class for managing a thread for the search
 class SearchThread {
 
 private:
@@ -20,6 +17,7 @@ private:
 public:
     explicit SearchThread(Board &b) : search(Search(b)) { }
 
+    /// Starts a new search with the given depth in a separate thread
     void start(const int depth) {
         if(thread.joinable()) {
             thread.join();
@@ -27,6 +25,7 @@ public:
         thread = std::thread(&Search::start, &search, depth);
     }
 
+    /// Stops the search and the thread
     void stop() {
         if(thread.joinable()) {
             search.stop();
