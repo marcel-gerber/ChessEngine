@@ -130,6 +130,8 @@ public:
             board.setFen(pair_index_fen.second);
         }
 
+        if(index >= args.size()) return;
+
         if(args[index] == "moves") {
             index++;
 
