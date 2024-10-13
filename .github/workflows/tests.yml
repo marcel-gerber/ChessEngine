@@ -12,6 +12,9 @@ jobs:
   build_and_test:
     name: Build and run tests
 
+    # Only allow automated workflow runs on internal pull requests
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
     runs-on: ubuntu-latest
 
     steps:
