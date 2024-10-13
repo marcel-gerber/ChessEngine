@@ -205,6 +205,7 @@ private:
             0x2eff72e1b136cd3bULL, 0x732cba2657acdc20ULL, 0xe30830ba3b2b3e04ULL, 0xebed849b1ef7efa4ULL
     };
 
+    // Array for en passant squares
     static constexpr uint64_t EnPassant[64] = {
             0x93bcedbff59d01ceULL, 0xc16f218df86c5a0dULL, 0xf7f9a2f399f958dcULL, 0xcd9af9fe983b8c22ULL,
             0xa38a45c098c1cbd4ULL, 0x9e73b912a0c99870ULL, 0xba394deadd2f59d0ULL, 0xe7ec0eab927d4f8bULL,
@@ -224,6 +225,7 @@ private:
             0xd28088017c675c1bULL, 0x9569e87617b0fed5ULL, 0x71a6c8ce40c21837ULL, 0xcaf7bbae5e8522b3ULL
     };
 
+    // Array for all castling values
     static constexpr uint64_t Castling[16] = {
             0x4eb4c0b8b9f1370fULL, 0xed41dea030316ddbULL, 0x8d673fd2d7d25e2cULL, 0x2a2c2d92c5c54855ULL,
             0x9ae78c7429c79e40ULL, 0xac9acb1c19d06767ULL, 0x4e05a226413bcad2ULL, 0x99e22324cc2c2ea8ULL,
@@ -231,21 +233,26 @@ private:
             0x751947af6e6fd04bULL, 0x0cde06b4b9247e9eULL, 0x5046c09718cd9c01ULL, 0x200d4a09ec323b21ULL
     };
 
+    // Zobrist hash for the side to move
     static constexpr uint64_t SideToMove = 0x897c24acf263ff62ULL;
 
 public:
+    /// Returns the Zobrist hash for a 'Piece' standing on a squares' index
     static constexpr uint64_t piece(const Piece &piece, const uint8_t &index) {
         return Pieces[64 * piece.index() + index];
     }
 
+    /// Returns the Zobrist hash for the squares' index
     static constexpr uint64_t enPassant(const uint8_t &index) {
         return EnPassant[index];
     }
 
+    /// Returns the Zobrist hash for the castling rights
     static constexpr uint64_t castling(const uint8_t &castling_rights) {
         return Castling[castling_rights];
     }
 
+    /// Returns the Zobrist hash for the side to move
     static constexpr uint64_t sideToMove() {
         return SideToMove;
     }

@@ -32,7 +32,6 @@ uint64_t Attacks::calculateRook(Square &square, uint64_t occupied) {
     return attacks;
 }
 
-/// Function used for initializing Magic Table
 uint64_t Attacks::calculateBishop(Square &square, uint64_t occupied) {
     uint64_t attacks = 0ULL;
 
@@ -44,7 +43,7 @@ uint64_t Attacks::calculateBishop(Square &square, uint64_t occupied) {
     return attacks;
 }
 
-void Attacks::initMagic(PieceType &&pieceType, Square &&square, Magic table[], uint64_t magic) {
+void Attacks::initMagicEntry(PieceType &&pieceType, Square &&square, Magic table[], uint64_t magic) {
     // Determine PieceType (Rook or Bishop) and store corresponding function to calculate its attacks
     std::function<uint64_t(Square &, uint64_t)> calculateAttacks = (pieceType.value() == PieceType::ROOK)
             ? calculateRook : calculateBishop;
@@ -121,7 +120,7 @@ void Attacks::initMagics() {
     BishopTable[0].attacks = BishopAttacks;
 
     for(int i = 0; i < 64; i++) {
-        initMagic(PieceType::ROOK, Square(i), RookTable, Constants::RookMagics[i]);
-        initMagic(PieceType::BISHOP, Square(i), BishopTable, Constants::BishopMagics[i]);
+        initMagicEntry(PieceType::ROOK, Square(i), RookTable, Constants::RookMagics[i]);
+        initMagicEntry(PieceType::BISHOP, Square(i), BishopTable, Constants::BishopMagics[i]);
     }
 }

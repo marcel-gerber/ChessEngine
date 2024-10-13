@@ -1,7 +1,3 @@
-//
-// Created by Marcel on 26.08.2024.
-//
-
 #include "eval.hpp"
 #include "movegen.hpp"
 #include "movepick.hpp"
@@ -12,9 +8,13 @@
 #include <iomanip>
 #include <vector>
 
+// Value used for initializing alpha and beta
 const int INFINITY = 0x7FFFFFFF;
+
+// Value used when a "mate in x plies" has been found
 const int VALUE_MATE = 32000;
 
+/// Calculates value for "mate in x plies"
 int mated(const int &ply) {
     return ply - VALUE_MATE;
 }
@@ -55,17 +55,20 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
     nodes_searched++;
     pv_length[ply] = ply;
 
+    // Early return when the current position is a repetition
     if(board.isRepetition()) return -1;
 
     const bool is_check = board.isCheck();
     const GameResult gameResult = board.checkForDraw(is_check);
 
+    // Early return when the current position is a draw by 50-move-rule or by insufficient material
     if(gameResult != GameResult::NONE) return gameResult == GameResult::LOSS ? mated(ply) : 0;
 
     const uint64_t zobrist_hash = board.getZobrist();
     const int orig_alpha = alpha;
 
-    // Transposition Table look up
+    // Transposition Table look up. We disable the TT lookup on
+    // root nodes in order to get information about pv nodes
     const TT::Entry* entry = TT::getEntry(zobrist_hash);
     if(ply != 0 && entry->zobrist_key == zobrist_hash) {
         if(entry->depth >= depth) {
@@ -81,8 +84,10 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
+    // When we reach depth 0, we dive into quiescence search
     if(depth == 0) return quiescence(alpha, beta);
 
+    // Initialize data needed for the search
     int max_score = -INFINITY;
     Move local_best_move = {};
     std::vector<Move> moves = {};
@@ -91,6 +96,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
     // If there are no legal moves we are either in checkmate or stalemate
     if(moves.empty()) return is_check ? mated(ply) : 0;
 
+    // Let the MovePicker score and sort the moves from best to worst
     MovePicker::scoreMoves(board, entry, moves);
     MovePicker::sortMoves(moves);
 
@@ -99,6 +105,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         int score = -negamax(depth - 1, -beta, -alpha, ply + 1);
         board.unmakeMove(move);
 
+        // Found a new best move
         if(score > max_score) {
             max_score = score;
             local_best_move = move;
@@ -119,6 +126,7 @@ int Search::negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
+    // Store position in the Transposition Table
     TT::addEntry(zobrist_hash, local_best_move, depth, max_score, orig_alpha, beta);
     return max_score;
 }
@@ -172,7 +180,10 @@ void Search::iterativeDeepening(int max_depth) {
         printInfo(depth, temp_score, nodes_searched, time_spent);
     }
 
+    // If we didn't even have enough time to search up to depth 1, we have to
+    // update 'best_move' to prevent illegal moves from being played
     if(best_move.raw() == 0) best_move = pv[0][0];
+
     std::cout << "bestmove " << best_move.toUCI() << std::endl;
 }
 
@@ -191,6 +202,7 @@ void Search::resetData() {
 }
 
 void Search::printInfo(int depth, int score, int nodes, uint64_t time) {
+    // Avoid arithmetic exception (dividing by 0)
     time = (time == 0) ? 1 : time;
 
     std::cout << std::fixed << std::setprecision(0)
@@ -199,10 +211,10 @@ void Search::printInfo(int depth, int score, int nodes, uint64_t time) {
               << " nodes " << nodes
               << " nps " << (nodes / ((double) time / 1000))
               << " time " << time
-              << " pv ";
+              << " pv";
 
     for(int i = 0; i < pv_length[0]; i++) {
-        std::cout << pv[0][i].toUCI() << " ";
+        std::cout << " " << pv[0][i].toUCI();
     }
     std::cout << std::endl;
 }

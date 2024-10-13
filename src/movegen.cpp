@@ -32,6 +32,8 @@ void MoveGen::initSquaresBetween() {
     }
 }
 
+// logic taken from Disservins' "chess-library"
+// Source: https://github.com/Disservin/chess-library/blob/a4404d5c781183fab09b0d76eac0df4b3a6cdf93/src/movegen.hpp#L100
 template<Color::Value color>
 uint64_t MoveGen::pinMaskHV(const Board &board) {
     const uint8_t king_index = board.getKingIndex(color);
@@ -55,6 +57,8 @@ uint64_t MoveGen::pinMaskHV(const Board &board) {
     return pin_hv;
 }
 
+// logic taken from Disservins' "chess-library"
+// Source: https://github.com/Disservin/chess-library/blob/a4404d5c781183fab09b0d76eac0df4b3a6cdf93/src/movegen.hpp#L126
 template<Color::Value color>
 uint64_t MoveGen::pinMaskDiagonal(const Board &board) {
     const uint8_t king_index = board.getKingIndex(color);
@@ -113,6 +117,11 @@ uint64_t MoveGen::attackedSquares(const Board &board) {
     return attacked;
 }
 
+// logic taken from Disservins' "chess-library"
+// Source: https://github.com/Disservin/chess-library/blob/a4404d5c781183fab09b0d76eac0df4b3a6cdf93/src/movegen.hpp#L40
+//
+// A good explanation on what the check mask is can be found here:
+// https://www.codeproject.com/Articles/5313417/Worlds-Fastest-Bitboard-Chess-Movegenerator
 template<Color::Value color>
 std::tuple<uint64_t, uint8_t> MoveGen::checkMask(const Board &board) {
     uint8_t double_check = 0;
@@ -432,6 +441,8 @@ void MoveGen::generateCastleMoves(const Board &board, std::vector<Move> &moves, 
     }
 }
 
+// logic based on Disservins' "chess-library"
+// Source: https://github.com/Disservin/chess-library/blob/a4404d5c781183fab09b0d76eac0df4b3a6cdf93/src/movegen.hpp#L493
 template<Color::Value color, MoveGenType moveGenType>
 void MoveGen::legalMoves(const Board &board, std::vector<Move> &moves) {
     uint64_t bb_king = board.getPieces(color, PieceType::KING);

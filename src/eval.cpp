@@ -6,6 +6,7 @@ int Eval::evaluate(const Board &board) {
     int eval = 0;
 
     // white pieces
+    // We do addition here
     uint64_t white_pawns = board.getPieces(Color::WHITE, PieceType::PAWN);
     while(white_pawns) {
         uint8_t index = Bits::pop(white_pawns);
@@ -41,7 +42,10 @@ int Eval::evaluate(const Board &board) {
         eval += Eval::QUEEN_POSITIONS[0][index];
     }
 
+    // ---------------------------------------------------------------------- \\
+
     // black pieces
+    // We do subtraction here
     uint64_t black_pawns = board.getPieces(Color::BLACK, PieceType::PAWN);
     while(black_pawns) {
         uint8_t index = Bits::pop(black_pawns);
@@ -77,7 +81,9 @@ int Eval::evaluate(const Board &board) {
         eval -= Eval::QUEEN_POSITIONS[1][index];
     }
 
-    // Kings
+    // ---------------------------------------------------------------------- \\
+
+    // kings
     if constexpr(gameState == GameState::MIDDLEGAME) {
         eval += KING_MIDDLEGAME_POSITIONS[0][board.getKingIndex(Color::WHITE)];
         eval -= KING_MIDDLEGAME_POSITIONS[1][board.getKingIndex(Color::BLACK)];
@@ -86,12 +92,16 @@ int Eval::evaluate(const Board &board) {
         eval -= KING_ENDGAME_POSITIONS[1][board.getKingIndex(Color::BLACK)];
     }
 
+    // Since we do addition on white pieces and subtraction on black pieces,
+    // we have to negate the eval when black is to move
     return board.getSideToMove() == Color::WHITE ? eval : (eval * -1);
 }
 
 int Eval::evaluate(const Board &board) {
-    // Count major (Queen and Rooks) and minor (Bishops and Knights) pieces
+    // Get bitboard of all major (queens and rooks) and minor (bishops and knights) pieces
     uint64_t major_and_minor = board.getOccupancy() & ~board.getPieces(PieceType::PAWN);
+
+    // Count pieces and subtract both kings'
     const uint8_t piece_count = Bits::popcount(major_and_minor) - 2;
 
     if(piece_count < 7) {

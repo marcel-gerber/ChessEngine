@@ -1,11 +1,8 @@
-//
-// Created by Marcel on 03.09.2024.
-//
-
 #include "movepick.hpp"
 
 #include <algorithm>
 
+// Best score for a pv move
 constexpr int16_t BEST_SCORE = 10000;
 
 int16_t MovePicker::mvvLva(const PieceType &pt_victim, const PieceType &pt_attacker) {
@@ -25,19 +22,20 @@ void MovePicker::scoreMoves(const Board &board, const TT::Entry* &entry, std::ve
     }
 
     for(Move &move : movelist) {
-        // Check for PV Move
+        // Check for PV Move and assign best score if found
         if(move == pv_move) {
             move.setScore(BEST_SCORE);
             continue;
         }
 
-        // MVV - LVA
         PieceType pt_to = board.getPiece(move.toIndex()).type();
 
+        // If it's not a capture -> continue
         if(pt_to.value() == PieceType::NONE) continue;
 
         PieceType pt_from = board.getPiece(move.fromIndex()).type();
 
+        // MVV - LVA
         move.setScore(mvvLva(pt_to, pt_from));
     }
 }
